@@ -1,10 +1,29 @@
 # Validación del demostrador académico
 
-Fecha de la preparación local: 12 de noviembre de 2026, America/Bogota.
-Entorno: Windows, Python 3.14.3, Streamlit 1.66.1. No se ejecutó CP-SAT ni se
-publicó el repositorio o la app. La modalidad interactiva está implementada,
-pero el primer ensayo real continúa pendiente de autorización; véase
-[el plan del botón](plan_optimizacion_interactiva.md).
+Fecha de preparación local: 12 de noviembre de 2026, America/Bogota.
+Entorno local: Windows, Python 3.14.3 y Streamlit 1.66.1.
+
+Durante la preparación local se aprobaron 48 pruebas automatizadas.
+La ejecución real de CP-SAT no pudo realizarse en ese equipo porque
+la memoria disponible era inferior al mínimo de 2 GiB establecido.
+
+El 13 de noviembre de 2026 se ejecutó el demostrador académico en
+Google Colab, utilizando Linux, Python 3.13.18 y OR-Tools 9.15.6755.
+
+El solver obtuvo el estado OPTIMAL, con objetivo 2/2, cota 2,
+94 variables, 49 restricciones y dos trayectos confirmados
+mediante la aeronave HK-049.
+
+El resultado fue recuperado y declarado COMPLETA y publicable.
+La evidencia pública se conserva en
+`docs/evidencias/evidencia_cpsat_publica.json`.
+
+Esta validación corresponde al escenario sintético de dos trayectos.
+No demuestra la ejecución desde la interfaz Streamlit desplegada
+ni la optimización de la operación semanal completa.
+
+El repositorio público y el despliegue de la aplicación continúan
+pendientes de verificación y publicación.
 
 ## Resultados observados en esta preparación
 
@@ -35,6 +54,41 @@ esta preparación prohíbe ejecutar optimizaciones. Los 12 casos de seguridad de
 ensayo local permanecen preparados, no ejecutados. No se suman esos grupos a una
 regresión nueva ni se presenta el total académico como evidencia de CP-SAT.
 
+## Ejecución real del optimizador CP-SAT
+
+Fecha: 13 de noviembre de 2026.
+Entorno: Google Colab, Linux, Python 3.13.18.
+Motor: OR-Tools CP-SAT 9.15.6755.
+
+El escenario académico fue ejecutado con datos sintéticos,
+respetando el umbral mínimo de memoria de 2 GiB.
+
+| Indicador | Resultado |
+| --- | --- |
+| Estado del solver | OPTIMAL |
+| Objetivo alcanzado | 2 de 2 trayectos |
+| Cota superior | 2 |
+| Variables | 94 |
+| Restricciones | 49 |
+| Tiempo de resolución | 0.012 segundos |
+| Trabajadores configurados | 4 |
+| Límite de tiempo del solver | 30 segundos |
+| Aeronave asignada | HK-049 |
+| Trayectos pendientes | 0 |
+| Estado de recuperación | COMPLETA |
+| Evidencia publicable | Sí |
+
+La solución confirmó los trayectos BOG-MDE y MDE-BOG,
+con un intervalo de tránsito de 60 minutos.
+
+El resultado fue recuperado mediante el mecanismo académico
+de trazabilidad y quedó registrado en:
+
+`docs/evidencias/evidencia_cpsat_publica.json`
+
+Esta ejecución demuestra la resolución óptima del escenario
+sintético ensayado. No constituye evidencia de optimización
+semanal ni de ejecución desde Streamlit Community Cloud.
 ## Recursos de la prueba UI sin solver
 
 En la comprobación final se observaron 904.437.760 bytes disponibles, menos de los 2 GiB
@@ -96,9 +150,9 @@ antes de publicar faltan revisión humana e inspección del índice y del histor
 
 | Archivo o grupo | Estado |
 | --- | --- |
-| `app_academica.py` | AUDITADO + PROBADO: siete AppTest de navegación, entrada, filtros, botón explícito simulado, conservación histórica, consulta y errores. CP-SAT real PENDIENTE. |
+| `app_academica.py` | AUDITADO + PROBADO: siete AppTest de navegación, entrada, filtros, botón explícito simulado, conservación histórica, consulta y errores. El motor CP-SAT fue validado por separado en Google Colab; su ejecución desde la interfaz pública continúa pendiente. |
 | `academico/ejecucion.py`, `academico/worker.py` | AUDITADO + PROBADO SIN SOLVER: admisión, aislamiento, perfil ORIGINAL, supervisión, cancelación cooperativa, persistencia temporal y recuperación independiente. |
-| `academico/escenarios.py` | AUDITADO + PROBADO: 24 pruebas de lectura, procedencia, límites e integridad; no valida un resultado real de CP-SAT aún inexistente. |
+| `academico/escenarios.py` | AUDITADO + PROBADO: 24 pruebas de lectura, procedencia, límites e integridad. Adicionalmente, se obtuvo una ejecución real de CP-SAT en Google Colab y se conservó su evidencia pública. La integración de esta evidencia con el visor Streamlit todavía requiere verificación. |
 | `demo/entradas_paso1.json` | AUDITADO + PROBADO al cargar la app: solo entradas sintéticas, resultados null. |
 | Pruebas académicas | AUDITADO + PROBADO: 48 casos finales correctos, sin solver, incluida la carga aislada del worker. |
 | Auditor de publicación y `.gitignore` | AUDITADO + PROBADO en política y escaneo; comprobación del índice e historial Git PENDIENTE. |
@@ -112,16 +166,20 @@ futuros no están incluidos automáticamente en la lista pública.
 
 ## Pendientes para la evidencia completa de Entrega 1
 
-1. Autorizar expresamente el primer ensayo real del botón ya implementado.
-2. Ejecutar el ensayo de dos trayectos solo con al menos 2 GiB disponibles; guardar
-   asignaciones, estado, objetivo, cota, tiempos, parámetros y hashes reales.
-3. Probar sobre el ensayo real la recuperación desde otro proceso y consulta histórica.
-5. Confirmar Python 3.14, instalar y arrancar en Linux; verificar dependencias resueltas.
-6. Revisar archivos e índice Git, obtener autorización para publicar y desplegar,
-   y registrar URL, commit, logs, fecha y captura del servicio real.
-7. Ensayar ambas modalidades y la presentación. Si el servicio cloud no admite
-   recursos suficientes, conservar consulta y elegir infraestructura adecuada
-   para CP-SAT; la consulta sola no completa el objetivo de ambas modalidades.
+1. Verificar la ejecución del botón de optimización desde la
+   interfaz Streamlit, utilizando el escenario sintético autorizado.
+2. Comprobar la recuperación y consulta histórica del resultado
+   real desde un proceso independiente.
+3. Verificar la instalación, las dependencias y el funcionamiento
+   de la aplicación en el entorno Linux de despliegue.
+4. Revisar los archivos públicos, el índice y el historial Git
+   antes de publicar el repositorio.
+5. Publicar el repositorio en GitHub y desplegar la aplicación,
+   registrando URL, commit, fecha y evidencia de funcionamiento.
+6. Ensayar las modalidades de consulta y optimización desde la
+   aplicación desplegada, respetando el mínimo de 2 GiB de memoria
+   para ejecutar CP-SAT.
+7. Preparar y verificar la presentación académica final.
 
 No hay resultado individual recuperado de 896/966, no se ejecutaron los 966
 trayectos y no se avanzó a tripulaciones. Esta preparación no certifica V5.2.

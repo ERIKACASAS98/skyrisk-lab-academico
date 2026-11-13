@@ -5,7 +5,7 @@ import streamlit as st
 
 from academico.escenarios import (
     ConsultaError, PersistenciaError, cargar_entradas, consultar_escenario,
-    listar_escenarios, texto_json,
+    listar_escenarios, texto_json, cargar_evidencia_colab,
 )
 from academico.ejecucion import EjecucionError, evaluar_admision, ejecutar_interactivo
 
@@ -70,8 +70,8 @@ def mostrar_resultados():
         ids = listar_escenarios()
         if not ids:
             st.warning('SIN_EJECUCION: no hay escenarios comerciales sintéticos publicados en este demostrador.')
-            st.write('El ensayo de dos trayectos está pendiente. Su ejecución requiere al menos 2 GiB de RAM libre y autorización.')
-            st.caption('Aquí aparecerán los resultados íntegros cuando exista una ejecución aprobada. No se calcula cobertura sin resultados.')
+            st.write('El catálogo de runs íntegros está vacío. La evidencia Colab se presenta por separado como resumen histórico.')
+            mostrar_evidencia_colab()
             return
         elegido = st.selectbox('Ejecución sintética', ids, key='run_academico')
         with st.spinner('Verificando integridad del escenario...'):
@@ -99,8 +99,27 @@ def mostrar_resultados():
             st.caption(f"Tamaño verificado: {r['bytes']:,} bytes.")
         st.download_button('Descargar resumen consultado', texto_json(r),
                            file_name=f"{r['run_id']}-consulta.json", mime='application/json')
+        mostrar_evidencia_colab()
     except (ConsultaError, PersistenciaError, OSError, ValueError, KeyError, TypeError) as error:
         st.error('No se puede consultar este escenario de forma segura: ' + str(error))
+
+
+def mostrar_evidencia_colab():
+    with st.expander('Evidencia histórica de Google Colab · 13/11/2026'):
+        try:
+            evidencia = cargar_evidencia_colab()
+            r = evidencia['resultado']
+            st.info('HISTÓRICO COLAB · no es una ejecución nueva desde Streamlit.')
+            st.write('run_id:', r['run_id'])
+            st.dataframe(list(r['resultado']['escenario']['confirmados'].values()),
+                         hide_index=True, width='stretch')
+            st.json(r['resultado']['diagnosticos'])
+            st.caption('Huella de la copia revisada y hash del escenario comprobados. '
+                       'El resumen no contiene los archivos originales para revalidar toda la cadena de eventos.')
+            st.download_button('Descargar evidencia histórica Colab', texto_json(evidencia),
+                               file_name='evidencia_colab_historica.json', mime='application/json')
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            st.error('Evidencia histórica no verificable: ' + str(error))
 
 
 def mostrar_resultado_interactivo(historico):
@@ -108,6 +127,8 @@ def mostrar_resultado_interactivo(historico):
     st.success('Resultado validado y recuperado desde un proceso independiente.')
     st.write('run_id:', historico['run_id'])
     st.caption('HISTÓRICO DE SESIÓN · se conserva si una ejecución posterior falla.')
+    st.caption('El almacén temporal se elimina al finalizar. Descargue el resultado; '
+               'la sesión no es almacenamiento durable y no alimenta el catálogo de runs.')
     diagnosticos = r.get('diagnosticos', [])
     diagnostico = diagnosticos[-1] if diagnosticos else {}
     a, b, c, d = st.columns(4)
@@ -276,8 +297,8 @@ def mostrar_demostrador():
 
             st.markdown("**Restricciones consideradas**")
             st.write(
-                "Continuidad física, tiempos mínimos de tránsito, "
-                "mantenimiento y compromisos protegidos."
+                "Unicidad de asignación y continuidad física de los dos trayectos, "
+                "con tránsito sintético de 60 minutos. Este caso no valida mantenimiento ni compromisos protegidos."
             )
 
             st.info(
@@ -295,7 +316,7 @@ def mostrar_demostrador():
             else:
                 st.warning(
     "Motor CP-SAT en espera de recursos suficientes. "
-    "El primer ensayo CP-SAT requiere autorización expresa "
+    "Cada nuevo ensayo CP-SAT requiere autorización expresa "
     "y al menos 2 GiB de memoria libre."
 )
 
@@ -307,8 +328,8 @@ def mostrar_demostrador():
         with st.expander("Alcance y evidencia técnica"):
             st.write(
                 "La auditoría profesional previa fue aceptada con 112 pruebas. "
-                "Los 12 casos de seguridad del paso 1 se prepararon "
-                "sin ejecutarse por falta de RAM."
+                "El caso sintético obtuvo OPTIMAL en Colab. Existe además una ejecución local OPTIMAL informada; "
+                "la integración real completa desde Streamlit sigue pendiente."
             )
             st.write(
                 "La validación del visor se documenta en "

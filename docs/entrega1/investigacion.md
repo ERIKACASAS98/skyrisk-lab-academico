@@ -19,7 +19,7 @@ modelo predictivo entrenado ni presenta un porcentaje de precisión de aprendiza
 | Validación previa | 112 pruebas aprobadas y aceptadas en la etapa anterior, no reejecutadas en esta preparación | Corrección para los casos cubiertos, no certificación operacional |
 | Reglas internacionales | Pruebas previas de tránsito y permanencia | Evidencia de límites en los escenarios probados |
 | Trazabilidad | Pruebas de hashes, fallos, recuperación y consulta | Recuperabilidad del formato bajo los fallos de aplicación probados |
-| Paso 1 con SQLite temporal real | Arnés y 12 guardas preparados | Ejecución y resultados todavía pendientes |
+| Paso 1 con SQLite temporal real | Ejecución real del escenario académico en Google Colab, con productor, CP-SAT y recuperador independientes | Resultado OPTIMAL, dos trayectos confirmados, recuperación COMPLETA y evidencia con hashes; limitado al escenario sintético ensayado |
 | Modalidad interactiva del demostrador | Botón y controles probados con procesos simulados | No representa aún una solución real ejecutada desde Streamlit |
 | Resultados semanales | Sin instantánea individual recuperable del resumen 896/966 | No usar ese agregado para comparar algoritmos ni reconstruir IDs |
 | Cloud académico | Diseño y preparación | Despliegue y funcionamiento real todavía pendientes |

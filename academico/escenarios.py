@@ -16,6 +16,7 @@ from planificacion_comercial.trazabilidad_escenarios import AlmacenEscenarios, P
 ROOT = Path(__file__).resolve().parents[1]
 ENTRADAS = ROOT / 'demo' / 'entradas_paso1.json'
 ESCENARIOS = ROOT / 'demo' / 'escenarios'
+EVIDENCIA_COLAB = ROOT / 'docs' / 'evidencias' / 'evidencia_cpsat_publica.json'
 RESERVAS = frozenset({'HK-020', 'HK-021', 'HK-022'})
 REGULARES = frozenset(f'HK-{i:03}' for i in range(1, 51)) - RESERVAS
 IDS = frozenset({'PASO1-SINT-N001', 'PASO1-SINT-N002'})
@@ -187,3 +188,24 @@ def texto_json(valor):
             return sorted(v)
         raise TypeError(type(v).__name__)
     return json.dumps(valor, ensure_ascii=False, indent=2, default=convertir, allow_nan=False)
+
+
+def cargar_evidencia_colab(ruta=EVIDENCIA_COLAB):
+    """Lee el resumen histórico revisado; no reconstruye la cadena de eventos."""
+    ruta = Path(ruta)
+    sin_enlace(ruta)
+    exigir(ruta.stat().st_size <= 128 * 1024, 'Resumen Colab excesivo.')
+    bruto = ruta.read_bytes()
+    exigir(hashlib.sha256(bruto.replace(b'\r\n', b'\n')).hexdigest() ==
+           '088c2a6099402224170b23b36e695d457968e387a38c336338214b508b05460c',
+           'La evidencia Colab difiere de la copia revisada.')
+    evidencia = json.loads(bruto)
+    r = evidencia['resultado']; consulta = r['resultado']
+    exigir(r['correcto'] and r['historico'] and r['run_id'] == consulta['run_id'],
+           'Identidad histórica Colab inconsistente.')
+    exigir(hashlib.sha256(texto_json(consulta['escenario']).encode('utf-8')).hexdigest()
+           == r['hash_escenario'], 'Hash del escenario Colab inconsistente.')
+    _, sha = cargar_entradas()
+    exigir(r['admision']['entrada_sha256'] == sha, 'Las entradas no coinciden con Colab.')
+    validar_operaciones(list(consulta['escenario']['confirmados'].values()))
+    return evidencia

@@ -183,3 +183,83 @@ futuros no están incluidos automáticamente en la lista pública.
 
 No hay resultado individual recuperado de 896/966, no se ejecutaron los 966
 trayectos y no se avanzó a tripulaciones. Esta preparación no certifica V5.2.
+
+## Cierre técnico del 13/11/2026: comprobaciones nuevas
+
+Los registros de 48 pruebas anteriores se mantienen como evidencia histórica,
+no como el recuento actual. En este cierre se ejecutó:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p 'test_*academic*.py' -q
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ejecucion_academica.py -q
+```
+
+- Suite conjunta: 58 pruebas, OK, 3,923 s.
+- Grupo del ejecutor tras añadir recuperación real de fixture: 17 pruebas,
+  OK, 1,535 s. Tras la prueba adicional, quedaron 59 casos únicos cubiertos; no sumar ambas pasadas.
+- AppTest de la suite conjunta: wall 1,989625 s, pico RSS muestreado
+  149.663.744 bytes, `cp_sat_ejecutado=false`. Sin servidor ni navegador.
+- La primera pasada dentro del sandbox quedó bloqueada por permisos sobre
+  temporales (58 pruebas, errores de permisos); no se considera aprobada.
+  La repetición acotada autorizada fuera del sandbox produjo el resultado OK.
+- La primera versión de la prueba adicional comparaba un hash con el orden de
+  claves anterior a la persistencia. Se corrigió la expectativa para comparar
+  contenido y hash del JSON recuperado; la repetición final del grupo aprobó.
+
+Se verificaron PID y argumentos del comando real, paquetes del entorno, .pth,
+ausencia de importación del solver en las sondas, bloqueo entre procesos y
+liberación, suma RSS de descendientes, cancelación cooperativa por deadline,
+recuperador antes/después de consulta, limpieza tras error y rechazo de evidencia
+Colab alterada. AppTest comprueba la separación histórica y errores de evidencia.
+Las pruebas de supervisión usan sondas; la prueba adicional usa el worker real en
+modo recuperador con `FIXTURE_TEST_NO_SOLVER`, sin llamar al productor CP-SAT.
+
+La evidencia Colab se conserva sin cambios, SHA-256:
+`7973ec39ac70e11f6cb8d778f4029e82f2121d731afdda58d536e8f8f6e7836c`.
+Se comprobó su hash de escenario y su correspondencia con las entradas. Es un
+resumen de ejecución previa; no contiene los archivos originales necesarios para
+volver a validar toda la cadena de eventos. No se afirma autenticidad externa
+solo por sus hashes. La ejecución local OPTIMAL permanece informada por el usuario,
+sin reejecución ni certificación nueva en esta sesión.
+
+Quedan pendientes instalación limpia y ejecución del código actual sobre Linux,
+integración real desde Streamlit, revisión humana del historial Git, preparación
+autorizada del índice, publicación, despliegue y demostración pública. No se
+realizó optimización real, conexión SQLite, instalación o cambio profesional.
+
+### Verificación final de paquete y finales de línea
+
+Git conserva la evidencia con LF y Windows la representa con CRLF. Se verificó
+que esa es la única diferencia entre la copia del índice y la de trabajo. La
+huella de copia revisada normaliza exclusivamente CRLF a LF:
+`088c2a6099402224170b23b36e695d457968e387a38c336338214b508b05460c`.
+El hash original de bytes de Windows arriba indicado se conserva como registro;
+no se reescribió la evidencia. El auditor registra ambas huellas y compara el
+índice normalizando solo finales de línea, sin omitir cambios de contenido.
+
+Tras esta corrección se ejecutaron únicamente los grupos afectados:
+
+| Grupo final | Casos aprobados | Tiempo unittest |
+| --- | ---: | ---: |
+| Lector académico (suite conjunta previa) | 24 | Incluido en los 3,923 s |
+| Ejecutor, incluida recuperación real sin solver | 17 | 1,535 s |
+| Publicación, incluida diferencia real frente a CRLF/LF | 11 | 0,273 s |
+| Interfaz AppTest, histórico Colab y error de integridad | 8 | 1,940 s |
+| Total de casos únicos aprobados por grupos | 60 | No sumar repeticiones |
+
+Última AppTest: 1,9397813 s, pico RSS muestreado 148.598.784 bytes,
+`cp_sat_ejecutado=false`. Son mediciones del test sin solver, no del cloud.
+`pip check` informó `No broken requirements found`; las cuatro versiones
+instaladas coinciden con requirements.txt. AST de los Python permitidos válido.
+
+La auditoría del paquete de trabajo permite exactamente 26 archivos, sin faltantes
+ni hallazgos, con .gitignore coincidente. La simulación de inclusión usa
+`git check-ignore --no-index -z --stdin` sobre la lista exacta: ninguno ignorado.
+No se hizo git add ni se alteró el índice. El índice anterior conserva diferencias
+de contenido respecto de las ediciones de trabajo y sigue no apto para publicar;
+no confundir ese rechazo con un fallo del paquete propuesto. El escaneo limitado
+no certifica ausencia absoluta de secretos ni revisa todo el historial Git.
+
+`git diff --check` final aprobó. El índice no tiene cambios preparados por esta
+sesión; sus 14 diferencias frente al trabajo incluyen la edición preexistente de
+investigacion.md, que se conservó sin modificar durante este cierre.

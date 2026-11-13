@@ -64,12 +64,11 @@ Fuentes: [recursos Community Cloud](https://docs.streamlit.io/deploy/streamlit-c
 
 ## Git local
 
-La inspección del 12 de noviembre de 2026 no encontró `git` en `PATH`, en las
-rutas habituales de Git for Windows ni un directorio `.git` en el proyecto. Por
-ello no fue posible revisar índice, objetos o historial. Debe instalarse
-[Git for Windows](https://git-scm.com/install/windows) desde la fuente oficial,
-abrir una terminal nueva y ejecutar el auditor con `--indice` antes de añadir o
-publicar archivos. Esta instalación requiere autorización separada.
+Git y el repositorio local ya están disponibles. La situación del 12 de noviembre
+sin Git queda superada. Ejecutar el auditor con `--indice`: las diferencias
+esperadas entre el índice y los archivos modificados se deben revisar antes de
+preparar una versión. Esta sesión no modifica el índice ni inspecciona todo el
+historial; no autoriza publicación.
 
 ## Evidencia pendiente antes de declarar cloud verificado
 
@@ -80,3 +79,25 @@ publicar archivos. Esta instalación requiere autorización separada.
 5. Prueba de consulta con un escenario sintético validado cuando exista.
 6. Para la modalidad interactiva: recursos efectivos suficientes,
    ejecución explícita pequeña y recuperación independiente con hashes.
+
+## Estado del código actual — 13/11/2026
+
+El lanzador ya no contiene una ruta fija `Lib/site-packages`. Usa purelib/platlib
+del entorno mediante sysconfig y carga sus `.pth`. Las sondas reales comprobaron
+PID directo, argumentos, paquetes y aislamiento en Windows/Python 3.14.3.
+El recuperador real leyó una fixture persistida desde otro proceso, sin solver.
+Las ramas Linux de bloqueo y cgroup no se ejecutaron en esta sesión; los tests
+que simulan admisión Linux no sustituyen esa prueba. No se afirma instalación
+Linux ni compatibilidad cloud validada para esta revisión.
+
+`requirements.txt` mantiene streamlit 1.66.1, pandas 3.0.0, ortools 9.15.6755 y
+psutil 7.2.2, sin dependencias nuevas. Las versiones instaladas y `pip check`
+se revisan localmente; una instalación limpia sigue pendiente. El procedimiento
+Linux exacto está en README, junto con publicación posterior, sin ejecutar Git add,
+commit, push ni despliegue durante este cierre.
+
+En producción de demostración, una plataforma con plazos estrictos o sin margen
+verificable no es apta para habilitar esta optimización cooperativa. Conservar la
+consulta histórica como respaldo y no reducir la admisión de 2 GiB. La exclusión
+no cubre réplicas con temporales independientes. Los temporales y la sesión no
+son almacenamiento durable; descargar el resultado y registrar la evidencia.

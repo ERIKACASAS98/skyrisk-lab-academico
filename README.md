@@ -128,9 +128,9 @@ declarar verificado el despliegue.
 ### Git para preparar el repositorio
 
 Git for Windows 2.56.1 está instalado y disponible en la terminal local.
-Con autorización, inicializar con `git init -b main`, comprobar las exclusiones
-y simular el agregado de los nombres exactos de `PERMITIDOS`, definidos en el
-auditor de publicación. Preparar el índice exclusivamente con esos 24 nombres;
+El repositorio ya existe: no reinicializarlo. Comprobar las exclusiones
+y revisar los nombres exactos de `PERMITIDOS`, definidos en el
+auditor de publicación. Preparar el índice exclusivamente con esos 26 nombres;
 no usar `git add .` ni `git add -A`. Después auditar el índice:
 
 ```powershell
@@ -142,7 +142,7 @@ git diff --cached --stat
 git diff --cached --check
 ```
 
-El índice debe contener exactamente los 24 archivos autorizados, sin faltantes,
+El índice debe contener exactamente los 26 archivos autorizados, sin faltantes,
 extras ni diferencias de contenido respecto de los archivos locales auditados.
 No ejecutar `commit` sin revisión y autorización; `push`, publicación y despliegue
 requieren autorización adicional. `.gitignore` no retira archivos ya versionados.
@@ -304,3 +304,90 @@ Material de apoyo: [arquitectura](docs/entrega1/arquitectura.md),
 Después de la entrega se retomarán cobertura semanal, calibración del perfil
 experimental, escalabilidad, operación cloud profesional y tripulaciones con
 autorización específica.
+
+## Cierre técnico académico del 13/11/2026
+
+El lanzador usa `sysconfig` (purelib/platlib), procesa `.pth` y conserva `-I`,
+PID directo y argumentos. No hay cambios al algoritmo CP-SAT, SQLite o V5.2.
+La consulta histórica distingue el resumen Colab de los runs íntegros y del
+histórico de sesión. El resumen Colab conserva sus bytes y su huella revisada;
+no contiene el archivo completo de eventos para reconstruir la cadena original.
+
+Un bloqueo de hilo y de archivo impide ensayos simultáneos en el mismo servidor
+cuando los procesos comparten usuario y directorio temporal. La supervisión suma
+RSS del árbol y comprueba durante el trabajo la reserva del host y el margen del
+contenedor. Se mantiene la admisión de 2 GiB y todos los presupuestos originales.
+Cgroup ilegible o bloqueo no disponible rechazan la ejecución.
+
+Los presupuestos de 60/15/90 s son supervisados, no plazos máximos garantizados.
+La cancelación es cooperativa: el recuperador la comprueba antes y después de la
+consulta; el productor conserva `stop_search()`. Un trabajador bloqueado puede
+retener el supervisor y su bloqueo indefinidamente. No desplegar optimización en
+un entorno que requiera terminación estricta; allí mantener solo consulta hasta
+disponer de infraestructura aprobada. No se utiliza terminación forzada.
+
+El temporal propio se limpia al acabar, también ante errores una vez que el hijo
+sale. La app conserva el resultado recuperado en memoria de sesión y permite
+su descarga. No se añade al catálogo `demo/escenarios`, no es almacenamiento
+durable y no debe confundirse con un nuevo ensayo al volver a mostrarlo.
+El pequeño archivo de bloqueo permanece intencionadamente; no contiene evidencia.
+Temporales de ejecuciones anteriores a este cambio no se borran automáticamente.
+
+Se aprobaron 58 pruebas académicas ligeras en conjunto y después 17 del ejecutor
+con una prueba adicional de recuperación real de una fixture sin solver. Tras
+comprobar también la normalización CRLF/LF, quedaron 60 casos únicos aprobados
+por grupos (24 lector, 17 ejecutor, 11 publicación y 8 interfaz). Ver `docs/entrega1/validacion.md` para resultados y limitaciones.
+No se ejecutó CP-SAT real durante este cierre. La ejecución local OPTIMAL es
+informada; Colab está documentado por separado; Streamlit real sigue pendiente.
+
+### Publicación posterior: comandos, no ejecutados en este cierre
+
+Desde la raíz académica, revisar primero el paquete de trabajo:
+
+```powershell
+.venv/Scripts/python.exe -B herramientas/validadores/auditar_paquete_academico.py --raiz .
+.venv/Scripts/python.exe -B herramientas/validadores/auditar_paquete_academico.py --raiz . --indice
+git diff --check
+git status --short
+```
+
+La primera auditoría debe aprobar. La segunda puede rechazar un índice anterior
+que aún no incorpora los cambios; no ocultar esa diferencia. Tras revisión del
+contenido y del historial Git, y solo con autorización para preparar el índice:
+
+```powershell
+$archivosAcademicos = @(.venv/Scripts/python.exe -B -c "from herramientas.validadores.auditar_paquete_academico import PERMITIDOS; print('
+'.join(sorted(PERMITIDOS)))")
+git add -- $archivosAcademicos
+.venv/Scripts/python.exe -B herramientas/validadores/auditar_paquete_academico.py --raiz . --indice
+git diff --cached --check
+git diff --cached --stat
+```
+
+No usar agregado global. Resolver cualquier rechazo antes de autorizar commit y
+push al repositorio académico revisado. No reutilizar el repositorio profesional.
+Después de publicar con autorización, seleccionar el repositorio y commit,
+`app_academica.py` como entrada y verificar Python 3.14 en el proveedor. Si no
+está disponible o no hay recursos verificables para CP-SAT, detener esa modalidad;
+no reducir umbrales ni cambiar el entorno profesional. Conservar logs de
+instalación de `requirements.txt`, versiones, URL, commit y captura de arranque.
+Comprobar entradas, consulta Colab y navegación sin solver desde sesión nueva.
+La prueba real del botón requiere autorización y admisión de al menos 2 GiB;
+registrar productor, recuperador, run_id, hashes, resultado y descarga.
+
+Para comprobar el paquete actual en Linux sin solver, en una copia académica y
+un entorno dedicado con Python 3.14:
+
+```bash
+python3.14 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip check
+.venv/bin/python -B -m unittest discover -s tests -p 'test_*academic*.py' -q
+.venv/bin/python -B herramientas/validadores/auditar_paquete_academico.py --raiz .
+.venv/bin/python -B -m streamlit run app_academica.py
+```
+
+Estos comandos Linux son instrucciones pendientes: no se ejecutaron en esta
+sesión Windows. Las pruebas usan fixtures, sin CP-SAT, y AppTest mantiene sus
+presupuestos propios de memoria y tiempo. Revisar el recorrido real del navegador
+por separado. La validación Colab previa no valida el lanzador modificado.

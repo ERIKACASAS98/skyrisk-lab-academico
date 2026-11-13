@@ -14,7 +14,9 @@ para crear este visor. No se ejecuta automáticamente CP-SAT al cargar la app.
 La entrega objetivo tendrá dos modalidades: optimización interactiva del caso de
 dos trayectos, mediante botón explícito, y consulta histórica como respaldo.
 Ambas rutas están implementadas. La interacción y conservación del histórico se
-probaron con procesos simulados; el primer CP-SAT real continúa sin ejecutarse.
+probaron con procesos simulados. El CP-SAT real obtuvo OPTIMAL en Colab;
+existe además una ejecución local OPTIMAL informada. La integración real completa
+desde Streamlit y la instalación Linux del código actual siguen pendientes.
 
 ## Componentes y responsabilidades
 
@@ -109,8 +111,8 @@ internacionales ya aprobadas.
 ORIGINAL conserva cuatro trabajadores, presolve deshabilitado y el límite de
 reloj configurado. EXPERIMENTAL_REPRODUCIBLE conserva sus parámetros provisionales:
 un trabajador, semilla 1, diez unidades deterministas y guardia de 300 segundos.
-El visor puede mostrar configuraciones archivadas, pero no ejecuta ni calibra
-perfiles. No se afirma reproducibilidad estricta.
+El visor muestra configuraciones archivadas y el botón ejecuta únicamente el
+perfil académico ORIGINAL. No calibra perfiles. No se afirma reproducibilidad estricta.
 
 ## Seguridad y separación de entornos
 
@@ -179,3 +181,37 @@ consultar artefactos revisados; no se presenta como almacén operacional durable
 - [Administración y recursos de Community Cloud](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app).
 - [Validación pública y límites de la evidencia](validacion.md). La auditoría
   profesional histórica se conserva localmente y no se publica.
+
+## Supervisión y ciclo de vida actualizados — 13/11/2026
+
+El ejecutor adquiere exclusión de hilo y bloqueo de archivo del sistema operativo
+(msvcrt en Windows, flock en Linux) antes de admitir y crear el temporal. Ambos
+bloqueos se conservan hasta que terminan los hijos y se limpia el temporal. La
+exclusión cubre procesos con el mismo directorio temporal; no coordina máquinas,
+contenedores o usuarios con temporales separados.
+
+El Python base ejecuta con `-I -B -S -X utf8`; solo se habilitan los directorios
+purelib/platlib del supervisor mediante `site.addsitedir`, incluidos sus `.pth`.
+El worker incorpora explícitamente la raíz académica. Los paquetes instalados y
+sus `.pth` son código de confianza del entorno, no entradas de usuario.
+
+La supervisión suma RSS del padre y descendientes observables, conserva la causa
+inicial de cancelación y vuelve a comprobar el margen de cgroup durante el trabajo.
+No es contención del sistema operativo: el muestreo puede omitir picos breves;
+RSS puede contar páginas compartidas varias veces. Si cgroup deja de ser legible,
+se solicita cancelación. No se promete detener operaciones nativas o de disco
+bloqueadas. El supervisor espera cooperación y mantiene la exclusión; un plazo
+estricto exige otra infraestructura y no está implementado aquí.
+
+El recuperador comprueba CANCELAR antes y después de leer. El supervisor contrasta
+PID, run_id y hash entre las fases. Los temporales propios se eliminan tras la
+salida del trabajador, con resultado o error. Ante fallo de limpieza se devuelve
+error; tras cierre abrupto del servidor puede quedar un temporal huérfano, sin
+borrado automático de evidencia previa. La consulta del catálogo sigue separada
+del resultado de sesión descargable.
+
+La copia Colab se muestra como resumen histórico con huella fijada y comprobación
+del hash de escenario y entradas. No sustituye la cadena original de manifiestos.
+La huella de copia normaliza solo CRLF/LF para Git Windows/Linux.
+Su archivo está incluido explícitamente junto con `.streamlit/config.toml`, que
+solo conserva tema y opciones de interfaz, nunca secretos.

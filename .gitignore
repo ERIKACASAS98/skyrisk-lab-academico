@@ -1,7 +1,7 @@
-# Paquete acad?mico p?blico: denegar todo salvo esta lista expl?cita.
-# No elimina archivos locales ni retira archivos ya seguidos por Git.
-# Antes de publicar, auditar tambi?n el ?ndice con --indice.
+# Lista académica exacta; no retira archivos ya versionados.
 /**
+!/.streamlit/
+/.streamlit/**
 !/academico/
 /academico/**
 !/demo/
@@ -18,9 +18,12 @@
 /demo/escenarios/**
 !/docs/entrega1/
 /docs/entrega1/**
+!/docs/evidencias/
+/docs/evidencias/**
 !/herramientas/validadores/
 /herramientas/validadores/**
 !/.gitignore
+!/.streamlit/config.toml
 !/README.md
 !/academico/__init__.py
 !/academico/ejecucion.py
@@ -36,6 +39,7 @@
 !/docs/entrega1/plan_optimizacion_interactiva.md
 !/docs/entrega1/presentacion.md
 !/docs/entrega1/validacion.md
+!/docs/evidencias/evidencia_cpsat_publica.json
 !/herramientas/validadores/auditar_paquete_academico.py
 !/planificacion_comercial/__init__.py
 !/planificacion_comercial/trazabilidad_escenarios.py

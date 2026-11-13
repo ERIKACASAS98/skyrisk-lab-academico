@@ -1,6 +1,7 @@
 """Revisión de la lista pública con fixtures temporales; nunca publica."""
 from contextlib import redirect_stdout
 import io
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -19,6 +20,26 @@ class PublicacionAcademicaTests(unittest.TestCase):
         (raiz / '.gitignore').write_text('\n'.join(a.reglas_gitignore()) + '\n', encoding='utf-8')
         (raiz / 'demo/entradas_paso1.json').write_text(json.dumps({
             'tipo_datos': 'SINTETICO', 'estado_ejecucion': 'SIN_EJECUCION', 'resultados': None}), encoding='utf-8')
+        nombre = 'docs/evidencias/evidencia_cpsat_publica.json'
+        (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
+
+    def test_evidencia_revisada_pasa_y_alteracion_se_rechaza(self):
+        nombre = 'docs/evidencias/evidencia_cpsat_publica.json'
+        contenido = (a.ROOT / nombre).read_bytes()
+        self.assertEqual(a.hallazgos_texto(nombre, contenido), [])
+        self.assertEqual(a.hallazgos_texto(nombre, contenido.replace(b'\r\n', b'\n')), [])
+        self.assertTrue(a.hallazgos_texto(nombre, contenido + b'\n'))
+        self.assertIn('.streamlit/config.toml', a.PERMITIDOS)
+        from academico.escenarios import cargar_evidencia_colab, ConsultaError
+        evidencia = cargar_evidencia_colab()
+        self.assertEqual(evidencia['resultado']['resultado']['diagnosticos'][0]['estado_solver'], 'OPTIMAL')
+        with tempfile.TemporaryDirectory() as d:
+            ruta = Path(d) / 'alterada.json'
+            ruta.write_bytes(contenido + b'\n')
+            with self.assertRaises(ConsultaError):
+                cargar_evidencia_colab(ruta)
+            ruta.write_bytes(contenido.replace(b'\r\n', b'\n'))
+            self.assertEqual(cargar_evidencia_colab(ruta), evidencia)
 
     def test_lista_excluye_operacional_historial_respaldos_y_paginas(self):
         for nombre in ('app.py', 'data/skyrisk_operacion.db', 'pages/Planificacion_Comercial.py',
@@ -86,6 +107,25 @@ class PublicacionAcademicaTests(unittest.TestCase):
             r = a.auditar_indice(Path('.'), [])
         self.assertEqual(r['estado'], 'NO_VERIFICABLE_SIN_GIT')
         self.assertFalse(r['apto'])
+
+    def test_indice_normaliza_solo_crlf_y_detecta_cambios_reales(self):
+        raiz = a.ROOT
+        inventario = [{'archivo': 'README.md',
+                       'sha256_lf': hashlib.sha256(b'contenido\n').hexdigest()}]
+        def git_simulado(git, ruta, argumentos):
+            if argumentos[0] == 'rev-parse':
+                return str(raiz).encode('utf-8')
+            if argumentos[0] == 'ls-files':
+                return b'100644 abc 0\tREADME.md\0'
+            if argumentos[1] == '-s':
+                return b'11'
+            return b'contenido\r\n'
+        with patch.object(a.shutil, 'which', return_value='git'), \
+             patch.object(a, '_git', side_effect=git_simulado):
+            self.assertEqual(a.auditar_indice(raiz, inventario)['hallazgos'], [])
+            inventario[0]['sha256_lf'] = hashlib.sha256(b'cambio real\n').hexdigest()
+            r = a.auditar_indice(raiz, inventario)
+            self.assertIn('INDICE_DIFIERE_DEL_ARCHIVO_REVISADO', {h['tipo'] for h in r['hallazgos']})
 
 
 if __name__ == '__main__':

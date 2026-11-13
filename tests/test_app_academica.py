@@ -60,6 +60,11 @@ class AppAcademicaTests(unittest.TestCase):
     def setUp(self):
         self.comprobar_recursos()
         self.importar = builtins.__import__
+        admision = patch('academico.ejecucion.evaluar_admision', return_value={
+            'admitido': False, 'motivos': ['RAM_HOST_MENOR_2_GIB'],
+            'contenedor': {'estado': 'NO_APLICA_HOST_LOCAL'}})
+        admision.start()
+        self.addCleanup(admision.stop)
 
         def sin_motores(nombre, *args, **kwargs):
             prohibidos = ('ortools', 'app', 'planificacion_comercial.planificador_continuo',
@@ -95,7 +100,7 @@ class AppAcademicaTests(unittest.TestCase):
                    side_effect=AssertionError('No ejecutar sin clic')) as ejecutar:
             app = self.abrir()
             self.assertEqual([m.value for m in app.metric], ['2', '47', '3'])
-            self.assertTrue(any('primer ensayo CP-SAT' in w.value for w in app.warning))
+            self.assertTrue(any('Cada nuevo ensayo CP-SAT' in w.value for w in app.warning))
             self.cambiar(app, 'Caso sintético')
             app.selectbox(key='origen_academico').select('MDE').run(timeout=15)
             self.cambiar(app, 'Optimización')
@@ -142,6 +147,15 @@ class AppAcademicaTests(unittest.TestCase):
             app = self.cambiar(self.abrir(), 'Consulta histórica')
         self.assertTrue(any('SIN_EJECUCION' in w.value for w in app.warning))
         self.assertEqual(len(app.metric), 0)
+        self.assertTrue(any('HISTÓRICO COLAB' in i.value for i in app.info))
+        self.assertTrue(any('no contiene los archivos originales' in c.value for c in app.caption))
+
+    def test_evidencia_colab_alterada_muestra_error_sin_ejecutar(self):
+        with patch.object(e, 'listar_escenarios', return_value=[]), \
+             patch.object(e, 'cargar_evidencia_colab', side_effect=e.ConsultaError('copia alterada')), \
+             patch('academico.ejecucion.ejecutar_interactivo', side_effect=AssertionError('No resolver')):
+            app = self.cambiar(self.abrir(), 'Consulta histórica')
+        self.assertTrue(any('copia alterada' in error.value for error in app.error))
 
     def test_error_integridad_se_muestra_sin_publicar_resultados(self):
         with patch.object(e, 'listar_escenarios', side_effect=e.ConsultaError('Integridad no verificable')):

@@ -6,12 +6,15 @@ la cancelación cooperativa no equivale a una terminación forzada del sistema.
 from __future__ import annotations
 
 import hashlib
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import sysconfig
 import tempfile
+import threading
 import time
 from uuid import uuid4
 
@@ -32,10 +35,52 @@ ENSAYO_S = 90
 MUESTREO_S = 0.1
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = Path(__file__).with_name('worker.py')
+_ENSAYO_ACTIVO = threading.Lock()
+_CONTEXTO_ENSAYO = threading.local()
 
 
 class EjecucionError(RuntimeError):
     pass
+
+
+@contextmanager
+def _exclusion_ensayo():
+    """Un ensayo por servidor/usuario, incluso entre procesos que comparten TEMP.
+
+    El archivo de bloqueo queda vacío o con un byte; nunca se borra para evitar
+    que dos procesos bloqueen archivos distintos con el mismo nombre.
+    """
+    if not _ENSAYO_ACTIVO.acquire(blocking=False):
+        raise EjecucionError('ENSAYO_ACADEMICO_EN_CURSO')
+    try:
+        ruta = Path(tempfile.gettempdir()) / 'SkyRiskLab-academico.lock'
+        if ruta.is_symlink() or ruta.is_junction():
+            raise EjecucionError('BLOQUEO_ACADEMICO_NO_SEGURO')
+        with ruta.open('a+b') as archivo:
+            if archivo.seek(0, 2) == 0:
+                archivo.write(b'0'); archivo.flush()
+            archivo.seek(0)
+            try:
+                if os.name == 'nt':
+                    import msvcrt
+                    msvcrt.locking(archivo.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(archivo, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError as error:
+                raise EjecucionError('ENSAYO_ACADEMICO_EN_CURSO_O_BLOQUEO_NO_DISPONIBLE') from error
+            try:
+                _CONTEXTO_ENSAYO.propietario = True
+                yield
+            finally:
+                _CONTEXTO_ENSAYO.propietario = False
+                archivo.seek(0)
+                if os.name == 'nt':
+                    msvcrt.locking(archivo.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(archivo, fcntl.LOCK_UN)
+    finally:
+        _ENSAYO_ACTIVO.release()
 
 
 def _leer_entero(ruta):
@@ -66,6 +111,13 @@ def _cgroup_v2():
     margenes, limites, usos, cpu = [], [], [], []
     while actual.is_relative_to(base.resolve()):
         limite, uso = _leer_entero(actual / 'memory.max'), _leer_entero(actual / 'memory.current')
+        try:
+            sin_limite = (actual / 'memory.max').read_text(encoding='ascii').strip() == 'max'
+        except OSError:
+            sin_limite = False
+        if uso is None or uso < 0 or (limite is None and not sin_limite):
+            return {'estado': 'NO_VERIFICABLE', 'margen_bytes': None,
+                    'limite_bytes': None, 'uso_bytes': None, 'cpu_max': None}
         if limite is not None and uso is not None:
             margenes.append(max(0, limite - uso)); limites.append(limite); usos.append(uso)
         try:
@@ -88,6 +140,8 @@ def evaluar_admision():
     memoria = psutil.virtual_memory()
     contenedor = _cgroup_v2()
     motivos = []
+    if _ENSAYO_ACTIVO.locked() and not getattr(_CONTEXTO_ENSAYO, 'propietario', False):
+        motivos.append('ENSAYO_ACADEMICO_EN_CURSO')
     if memoria.available < RAM_MINIMA:
         motivos.append('RAM_HOST_MENOR_2_GIB')
     if os.name != 'nt':
@@ -111,6 +165,10 @@ def _tamano(raiz):
     for actual, directorios, nombres in os.walk(raiz):
         if len(directorios) + len(nombres) > 256:
             raise EjecucionError('Demasiadas entradas en el ensayo')
+        for nombre in directorios:
+            p = Path(actual) / nombre
+            if p.is_symlink() or p.is_junction():
+                raise EjecucionError('Enlace no permitido en el ensayo')
         for nombre in nombres:
             p = Path(actual) / nombre
             if p.is_symlink() or p.is_junction():
@@ -133,6 +191,16 @@ def _leer_salida(ruta, pid):
     return datos
 
 
+def _rss_arbol(proceso):
+    total = proceso.memory_info().rss
+    for hijo in proceso.children(recursive=True):
+        try:
+            total += hijo.memory_info().rss
+        except psutil.NoSuchProcess:
+            pass  # Un descendiente que ya terminó no consume RAM actual.
+    return total
+
+
 def _proceso(fase, raiz, token, *, run_id=None, deadline=None):
     admision = evaluar_admision()
     if not admision['admitido']:
@@ -140,10 +208,12 @@ def _proceso(fase, raiz, token, *, run_id=None, deadline=None):
     control = raiz / 'control'
     salida, error = control / f'{fase}.json', control / f'{fase}.stderr'
     cancelar = control / 'CANCELAR'
-    args = [sys.executable, '-I', '-B', '-X', 'utf8', str(WORKER),
-            '--modo', fase, '--raiz', str(raiz), '--token', token]
+    if cancelar.exists():
+        raise EjecucionError('ENSAYO_CANCELADO_ANTES_DEL_LANZAMIENTO')
+    args = ['--modo', fase, '--raiz', str(raiz), '--token', token]
     if run_id:
         args += ['--run-id', run_id]
+    args = _comando_trabajador_directo(args)
     inicio = time.perf_counter()
     presupuesto = PRODUCTOR_S if fase == 'productor' else RECUPERADOR_S
     rss_max = RSS_PRODUCTOR_MAX if fase == 'productor' else RSS_RECUPERADOR_MAX
@@ -152,26 +222,41 @@ def _proceso(fase, raiz, token, *, run_id=None, deadline=None):
         proceso = subprocess.Popen(args, stdout=out, stderr=err, cwd=raiz,
                                    env=dict(os.environ, SKYRISK_MODO_ACADEMICO='1'),
                                    shell=False, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-        observado = psutil.Process(proceso.pid)
         pico = 0
-        while proceso.poll() is None:
-            try:
-                pico = max(pico, observado.memory_info().rss)
-                # Los 2 GiB se exigen justo antes de lanzar cada hijo. Durante
-                # el trabajo se vigila el RSS propio y una reserva crítica del
-                # host; no se vuelve imposible el ensayo por su consumo normal.
-                if psutil.virtual_memory().available < 256 * MIB:
-                    motivo_cancelacion = 'RESERVA_CRITICA_HOST'
-                elif pico > rss_max:
-                    motivo_cancelacion = 'RSS_SUPERADO'
-                elif time.perf_counter() - inicio > presupuesto or (deadline and time.perf_counter() > deadline):
-                    motivo_cancelacion = 'TIEMPO_SUPERADO'
-                _tamano(raiz)
-            except (OSError, psutil.Error, EjecucionError):
-                motivo_cancelacion = 'ERROR_SUPERVISION'
-            if motivo_cancelacion and not cancelar.exists():
-                cancelar.touch(exist_ok=False)
-            time.sleep(MUESTREO_S)
+        try:
+            observado = psutil.Process(proceso.pid)
+            while proceso.poll() is None:
+                try:
+                    pico = max(pico, _rss_arbol(observado))
+                    if psutil.virtual_memory().available < 256 * MIB:
+                        motivo_cancelacion = motivo_cancelacion or 'RESERVA_CRITICA_HOST'
+                    elif pico > rss_max:
+                        motivo_cancelacion = motivo_cancelacion or 'RSS_SUPERADO'
+                    elif time.perf_counter() - inicio > presupuesto or (deadline and time.perf_counter() > deadline):
+                        motivo_cancelacion = motivo_cancelacion or 'TIEMPO_SUPERADO'
+                    if os.name != 'nt':
+                        contenedor = _cgroup_v2()
+                        if contenedor['estado'] not in ('VERIFICADO', 'SIN_LIMITE_FINITO'):
+                            motivo_cancelacion = motivo_cancelacion or 'LIMITE_CONTENEDOR_NO_VERIFICABLE'
+                        elif (contenedor['margen_bytes'] is not None
+                              and contenedor['margen_bytes'] < 256 * MIB):
+                            motivo_cancelacion = motivo_cancelacion or 'RESERVA_CRITICA_CONTENEDOR'
+                    _tamano(raiz)
+                except psutil.NoSuchProcess:
+                    if proceso.poll() is None:
+                        motivo_cancelacion = motivo_cancelacion or 'ERROR_SUPERVISION'
+                except (OSError, psutil.Error, EjecucionError):
+                    motivo_cancelacion = motivo_cancelacion or 'ERROR_SUPERVISION'
+                if motivo_cancelacion and not cancelar.exists():
+                    cancelar.touch(exist_ok=False)
+                time.sleep(MUESTREO_S)
+        finally:
+            # Esperar al hijo antes de limpiar el almacén o liberar la exclusión.
+            # No hay terminación forzada ni promesa de tiempo máximo estricto.
+            if proceso.poll() is None:
+                cancelar.touch(exist_ok=True)
+                proceso.wait()
+    _tamano(raiz)
     datos = _leer_salida(salida, proceso.pid)
     datos['supervision'] = {'wall_s': time.perf_counter() - inicio,
                             'pico_rss_bytes': pico,
@@ -183,10 +268,19 @@ def _proceso(fase, raiz, token, *, run_id=None, deadline=None):
 
 def ejecutar_interactivo():
     """Ejecutar solo desde el botón explícito de Streamlit."""
+    with _exclusion_ensayo():
+        return _ejecutar_exclusivo()
+
+
+def _ejecutar_exclusivo():
     admision = evaluar_admision()
     if not admision['admitido']:
         raise EjecucionError('Optimización deshabilitada: ' + ', '.join(admision['motivos']))
-    raiz = Path(tempfile.mkdtemp(prefix='SkyRiskLab-academico-')).resolve()
+    with tempfile.TemporaryDirectory(prefix='SkyRiskLab-academico-') as temporal:
+        return _ejecutar_en_temporal(Path(temporal).resolve(), admision)
+
+
+def _ejecutar_en_temporal(raiz, admision):
     control = raiz / 'control'; control.mkdir()
     token = uuid4().hex
     configuracion = {'token_sha256': hashlib.sha256(token.encode()).hexdigest(),
@@ -201,12 +295,39 @@ def ejecutar_interactivo():
     recuperador = _proceso('recuperador', raiz, token, run_id=productor['run_id'], deadline=deadline)
     if productor['pid'] == recuperador['pid']:
         raise EjecucionError('La recuperación no ocurrió en un proceso independiente')
+    if productor['run_id'] != recuperador['run_id']:
+        raise EjecucionError('La recuperación no coincide con el run_id solicitado')
     if productor['hash_escenario'] != recuperador['hash_escenario']:
         raise EjecucionError('La recuperación no coincide con el resultado persistido')
     return {'correcto': True, 'historico': True, 'run_id': productor['run_id'],
-            'raiz': str(raiz), 'resultado': recuperador['resultado'],
+            'almacen': 'TEMPORAL_ELIMINADO_AL_FINALIZAR', 'resultado': recuperador['resultado'],
             'productor': productor['metricas'], 'recuperador': recuperador['metricas'],
             'supervision_productor': productor['supervision'],
             'supervision_recuperador': recuperador['supervision'],
             'wall_total_s': time.perf_counter() - inicio,
             'admision': admision, 'hash_escenario': productor['hash_escenario']}
+
+
+def _comando_trabajador_directo(args):
+    """Lanza el Python base sin redirector y con los paquetes del entorno actual.
+
+    -I excluye PYTHONPATH, el directorio actual y el site de usuario. -S evita
+    cargar paquetes del Python base; addsitedir habilita purelib/platlib del
+    supervisor y sus .pth, incluidos paquetes con extensiones nativas.
+    """
+    base = Path(sys._base_executable).resolve()
+    rutas = sysconfig.get_paths()
+    dependencias = list(dict.fromkeys(str(Path(rutas[k]).resolve())
+                                    for k in ('purelib', 'platlib')))
+
+    if not base.is_file() or not all(Path(p).is_dir() for p in dependencias):
+        raise EjecucionError('Entorno Python académico incompleto')
+
+    codigo = (
+        'import sys, site, runpy; '
+        f'[site.addsitedir(p) for p in {dependencias!r}]; '
+        f'sys.argv = [{str(WORKER)!r}] + sys.argv[1:]; '
+        f'runpy.run_path({str(WORKER)!r}, run_name="__main__")'
+    )
+
+    return [str(base), '-I', '-B', '-S', '-X', 'utf8', '-c', codigo, *args]

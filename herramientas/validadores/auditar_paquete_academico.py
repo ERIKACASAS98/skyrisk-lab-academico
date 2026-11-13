@@ -18,6 +18,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 PERMITIDOS = frozenset({
+    '.streamlit/config.toml', 'docs/evidencias/evidencia_cpsat_publica.json',
     '.gitignore', 'README.md', 'app_academica.py', 'requirements.txt',
     'academico/__init__.py', 'academico/escenarios.py',
     'academico/ejecucion.py', 'academico/worker.py',
@@ -80,6 +81,11 @@ def hallazgos_texto(nombre, contenido):
                              'linea': texto.count('\n', 0, coincidencia.start()) + 1})
     if contenido.startswith(b'SQLite format 3\x00'):
         hallazgos.append({'archivo': nombre, 'tipo': 'SQLITE_PROHIBIDA'})
+    if nombre == 'docs/evidencias/evidencia_cpsat_publica.json':
+        # Copia revisada, normalizando solo CRLF/LF para Git Windows/Linux.
+        # Cambiar esta huella requiere revisar de nuevo la evidencia completa.
+        if hashlib.sha256(contenido.replace(b'\r\n', b'\n')).hexdigest() != '088c2a6099402224170b23b36e695d457968e387a38c336338214b508b05460c':
+            hallazgos.append({'archivo': nombre, 'tipo': 'EVIDENCIA_DIFIERE_DE_COPIA_REVISADA'})
     if nombre == 'demo/entradas_paso1.json':
         try:
             datos = json.loads(texto)
@@ -150,8 +156,8 @@ def auditar_indice(raiz, inventario):
                 break
             contenido = _git(git, raiz, ['cat-file', 'blob', objeto])
             hallazgos.extend(hallazgos_texto(nombre, contenido))
-            esperado = por_nombre.get(nombre, {}).get('sha256')
-            if hashlib.sha256(contenido).hexdigest() != esperado:
+            esperado = por_nombre.get(nombre, {}).get('sha256_lf')
+            if hashlib.sha256(contenido.replace(b'\r\n', b'\n')).hexdigest() != esperado:
                 hallazgos.append({'archivo': nombre, 'tipo': 'INDICE_DIFIERE_DEL_ARCHIVO_REVISADO'})
         faltantes = sorted(PERMITIDOS - set(seguidos))
         return {'estado': 'REVISADO', 'seguidos': sorted(seguidos), 'faltantes': faltantes,
@@ -177,7 +183,8 @@ def auditar(raiz=ROOT, *, revisar_indice=False):
                 continue
             contenido = ruta.read_bytes()
             inventario.append({'archivo': nombre, 'bytes': len(contenido),
-                               'sha256': hashlib.sha256(contenido).hexdigest()})
+                               'sha256': hashlib.sha256(contenido).hexdigest(),
+                               'sha256_lf': hashlib.sha256(contenido.replace(b'\r\n', b'\n')).hexdigest()})
             hallazgos.extend(hallazgos_texto(nombre, contenido))
             if nombre == '.gitignore':
                 reglas = [l.strip() for l in contenido.decode('utf-8-sig').splitlines()

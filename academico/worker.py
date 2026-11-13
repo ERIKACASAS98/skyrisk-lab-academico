@@ -138,11 +138,18 @@ def producir(raiz):
 
 def recuperar(raiz, run_id):
     # Este modo no importa OR-Tools y valida el histórico antes de devolverlo.
+    _comprobar_cancelacion(raiz)
     consultado = consultar_escenario(run_id, raiz / 'ejecuciones')
+    _comprobar_cancelacion(raiz)
     if not consultado['publicable']:
         raise ValueError('La ejecución no tiene cierre validado')
     return {'run_id': run_id, 'hash_escenario': _hash(consultado['escenario']),
             'resultado': consultado}
+
+
+def _comprobar_cancelacion(raiz):
+    if (raiz / 'control' / 'CANCELAR').exists():
+        raise RuntimeError('ENSAYO_CANCELADO_COOPERATIVAMENTE')
 
 
 def main(argv=None):
@@ -155,8 +162,10 @@ def main(argv=None):
     if hashlib.sha256(args.token.encode()).hexdigest() != config['token_sha256']:
         raise SystemExit(2)
     try:
+        _comprobar_cancelacion(raiz)
         funcion = (lambda: producir(raiz)) if args.modo == 'productor' else (lambda: recuperar(raiz, args.run_id))
         datos, metricas = _medir(raiz, args.modo, funcion)
+        _comprobar_cancelacion(raiz)
         print(json.dumps({'correcto': True, 'pid': os.getpid(), **datos, 'metricas': metricas},
                          ensure_ascii=False, default=str))
         return 0

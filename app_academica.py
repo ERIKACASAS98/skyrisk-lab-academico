@@ -18,10 +18,43 @@ def mostrar_caso(datos, sha):
     st.info('Estas son entradas de prueba. Todavía no representan asignaciones obtenidas por CP-SAT.')
     origen = st.selectbox('Aeropuerto de origen', ['Todos', 'BOG', 'MDE'], key='origen_academico')
     operaciones = [v for v in datos['operaciones'] if origen == 'Todos' or v['origen'] == origen]
-    st.dataframe(operaciones, hide_index=True, width='stretch')
+
+    st.markdown("#### ✈ Programación de trayectos")
+
+    st.dataframe(
+        operaciones,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "id_vuelo": st.column_config.TextColumn("Identificador"),
+            "tipo": st.column_config.TextColumn("Tipo"),
+            "origen": st.column_config.TextColumn("Origen"),
+            "destino": st.column_config.TextColumn("Destino"),
+            "salida_utc": st.column_config.TextColumn("Salida (UTC)"),
+            "llegada_utc": st.column_config.TextColumn("Llegada (UTC)"),
+            "ruta_maestra": st.column_config.TextColumn("Ruta"),
+            "operacion_origen": st.column_config.TextColumn("Operación de origen"),
+        },
+    )
+
     st.caption(f'{len(operaciones)} trayectos visibles. Todos los horarios incluyen zona UTC.')
-    st.write('Perfil propuesto para el ensayo:', datos['perfil_propuesto'])
-    st.json(datos['limites_ensayo'])
+
+    st.markdown("#### Parámetros del escenario")
+
+    limites = datos['limites_ensayo']
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Trayectos", limites["trayectos"])
+    col2.metric("Candidatos máximos", limites["candidatos_maximos"])
+    col3.metric("Tránsito mínimo", f'{limites["transito_minutos"]} min')
+    col4.metric("Tiempo de optimización", f'{limites["solver_segundos"]} s')
+
+    st.caption(f"Perfil del ensayo: {datos['perfil_propuesto']}")
+
+    with st.expander("Configuración técnica completa"):
+        st.json(limites)
+
     st.caption('El tránsito del ejemplo es de 60 minutos. Las tres reservas están excluidas de la programación base.')
     with st.expander('Inventario sintético y evidencia de entrada'):
         st.write('Regulares:', ', '.join(datos['flota']['regulares']))
@@ -100,12 +133,44 @@ def mostrar_optimizacion(datos):
     st.subheader('Optimización interactiva')
     st.selectbox('Escenario sintético', [datos['id_escenario']], key='escenario_optimizar_academico')
     admision = evaluar_admision()
-    st.write('Perfil:', 'ORIGINAL · 4 trabajadores · 30 s de solver')
-    st.json(datos['limites_ensayo'])
-    if admision['admitido']:
-        st.success('Recursos admitidos. La optimización solo comenzará al pulsar el botón.')
+
+    st.caption('Perfil de optimización: ORIGINAL · 4 trabajadores')
+
+    limites = datos['limites_ensayo']
+
+    col1, col2, col3, col4 = st.columns(4, gap='medium')
+
+    col1.metric('✈ Trayectos', limites['trayectos'])
+    col2.metric('◈ Candidatos máximos', limites['candidatos_maximos'])
+    col3.metric('◷ Tránsito mínimo', f"{limites['transito_minutos']} min")
+    col4.metric('◴ Tiempo del solver', f"{limites['solver_segundos']} s")
+
+    with st.expander('Ver configuración técnica completa'):
+        st.json(limites)
+
+
+    st.markdown("#### Motor de optimización CP-SAT")
+
+    if admision["admitido"]:
+        st.success(
+            "🟢 SISTEMA DISPONIBLE · Recursos suficientes. "
+            "La optimización comenzará únicamente cuando autorices la ejecución."
+        )
     else:
-        st.warning('Optimización deshabilitada: ' + ', '.join(admision['motivos']))
+        st.warning(
+            "🟡 SISTEMA EN ESPERA · Optimización deshabilitada: "
+            + ", ".join(admision["motivos"])
+        )
+
+        with st.expander("Consultar motivos de la restricción"):
+            for motivo in admision["motivos"]:
+                st.write(f"• {motivo}")
+
+    st.caption(
+        "El sistema verifica los recursos antes de ejecutar CP-SAT. "
+        "No se generan resultados simulados para reemplazar una ejecución real."
+    )
+
     with st.expander('Comprobación de recursos'):
         st.json(admision)
         st.caption('Los límites son supervisados. La cancelación cooperativa no garantiza una terminación forzada.')
@@ -137,9 +202,31 @@ def mostrar_optimizacion(datos):
 
 
 def mostrar_demostrador():
-    st.title('SkyRisk Lab')
-    st.caption('Entrega 1 · Taller ABP de Introducción a la Inteligencia Artificial · 16 de noviembre de 2026')
-    st.write('Planificación comercial de aeronaves mediante optimización con restricciones y resultados trazables.')
+
+    st.markdown(
+        """
+<div style="background: linear-gradient(110deg, #14263B, #0B1C30); border: 1px solid #24445D; border-radius: 16px; padding: 30px 34px; margin-bottom: 24px;">
+    <div style="color: #38BDF8; font-size: 12px; letter-spacing: 3px; font-weight: 700;">
+        ✈ AVIATION INTELLIGENCE PLATFORM
+    </div>
+    <h1 style="color: #F1F5F9; font-size: 38px; margin: 12px 0 8px 0;">
+        SkyRisk Lab
+    </h1>
+    <p style="color: #A8BED3; font-size: 16px; margin: 0;">
+        Centro de inteligencia y optimización de operaciones aéreas
+    </p>
+    <div style="margin-top: 22px; color: #7F9BB5; font-size: 12px;">
+        DEMOSTRADOR ACADÉMICO · ENTREGA 1 · NOVIEMBRE 2026
+<br>
+<span style="color: #CBD5E1; font-size: 13px;">
+    Desarrollado por: Erika Liliana Casas Toro · Viana Maria Ruiz Ruiz
+</span>
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
     try:
         datos, sha = cargar_entradas()
     except (ConsultaError, OSError, ValueError, KeyError, TypeError) as error:
@@ -154,19 +241,87 @@ def mostrar_demostrador():
     elif vista == 'Optimización':
         mostrar_optimizacion(datos)
     else:
-        a, b, c = st.columns(3)
-        a.metric('Trayectos del caso', len(datos['operaciones']))
-        b.metric('Aeronaves regulares', len(datos['flota']['regulares']))
-        c.metric('Reservas excluidas', len(datos['flota']['reservas']))
-        st.info('La optimización solo se inicia desde el botón explícito y después de superar la admisión de recursos.')
-        st.write('El componente de IA existente utiliza OR-Tools CP-SAT para seleccionar trayectos compatibles con continuidad física, tránsito, mantenimiento y compromisos protegidos.')
-        st.write('Las cuatro rutas especiales BOG–MIA, MDE–MIA, MDE–PTY y MDE–SDQ conservan 60–120 minutos totales en tierra y no permiten pernocta comercial programada.')
-        st.warning('El primer ensayo CP-SAT aún requiere autorización expresa. No se presentan asignaciones ni porcentajes de cobertura inventados.')
-        with st.expander('Alcance y evidencia disponible'):
-            st.write('La auditoría profesional previa fue aceptada con 112 pruebas. Los 12 casos de seguridad del paso 1 se prepararon sin ejecutarse por falta de RAM.')
-            st.write('La validación de este visor se documenta por separado en docs/entrega1/validacion.md.')
-            st.write('Publicación GitHub, instalación Linux y despliegue cloud real pendientes de verificación y autorización.')
-            st.caption('El demostrador académico no declara terminada SkyRisk Lab V5.2.')
+            
+        st.markdown("### Centro de control operacional")
+        st.caption(
+            "Visión general del escenario académico de planificación aérea."
+        )
+
+        col1, col2, col3 = st.columns(3, gap="medium")
+
+        col1.metric(
+            "✈ Trayectos programados",
+            len(datos["operaciones"])
+        )
+        col2.metric(
+            "◈ Aeronaves regulares",
+            len(datos["flota"]["regulares"])
+        )
+        col3.metric(
+            "◇ Reservas excluidas",
+            len(datos["flota"]["reservas"])
+        )
+
+        st.divider()
+
+        izquierda, derecha = st.columns([3, 2], gap="large")
+
+        with izquierda:
+            st.markdown("#### Inteligencia operacional")
+            st.write(
+                "SkyRisk Lab utiliza optimización matemática mediante "
+                "OR-Tools CP-SAT para evaluar asignaciones de aeronaves "
+                "respetando restricciones operacionales."
+            )
+
+            st.markdown("**Restricciones consideradas**")
+            st.write(
+                "Continuidad física, tiempos mínimos de tránsito, "
+                "mantenimiento y compromisos protegidos."
+            )
+
+            st.info(
+                "El demostrador utiliza datos sintéticos. "
+                "No representa operaciones reales de una aerolínea."
+            )
+
+        with derecha:
+            st.markdown("#### Estado del demostrador")
+
+            admision_resumen = evaluar_admision()
+
+            if admision_resumen["admitido"]:
+                st.success("Motor CP-SAT disponible para ejecución autorizada.")
+            else:
+                st.warning(
+    "Motor CP-SAT en espera de recursos suficientes. "
+    "El primer ensayo CP-SAT requiere autorización expresa "
+    "y al menos 2 GiB de memoria libre."
+)
+
+            st.caption(
+                "La optimización requiere confirmación explícita. "
+                "No se presentan resultados inventados."
+            )
+
+        with st.expander("Alcance y evidencia técnica"):
+            st.write(
+                "La auditoría profesional previa fue aceptada con 112 pruebas. "
+                "Los 12 casos de seguridad del paso 1 se prepararon "
+                "sin ejecutarse por falta de RAM."
+            )
+            st.write(
+                "La validación del visor se documenta en "
+                "docs/entrega1/validacion.md."
+            )
+            st.write(
+                "GitHub público, compatibilidad Linux y despliegue "
+                "cloud pendientes de verificación."
+            )
+            st.caption(
+                "El demostrador académico no declara terminada "
+                "la plataforma profesional SkyRisk Lab V5.2."
+            )
 
 
 # Lista explícita: Streamlit ignora el directorio pages/ profesional.

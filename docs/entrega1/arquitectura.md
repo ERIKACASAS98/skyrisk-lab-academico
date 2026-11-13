@@ -55,7 +55,21 @@ flowchart TB
 ```
 
 Las líneas de despliegue representan trabajo pendiente. El diagrama no acredita
-que una aplicación esté publicada ni que el ensayo haya sido ejecutado.
+que una aplicación esté publicada.
+
+El 13 de noviembre de 2026 se ejecutó satisfactoriamente el motor académico
+CP-SAT en Google Colab, utilizando Python 3.13.18 y OR-Tools 9.15.6755.
+
+El escenario sintético de dos trayectos obtuvo una solución OPTIMAL,
+con objetivo 2/2, 94 variables, 49 restricciones y una secuencia
+BOG-MDE-BOG asignada a la aeronave HK-049.
+
+La evidencia verificable se conserva en
+`docs/evidencias/evidencia_cpsat_publica.json`.
+
+Esta ejecución valida el motor académico para el escenario ensayado,
+pero no demuestra todavía el funcionamiento de la aplicación Streamlit
+en un entorno cloud público ni la optimización de la operación semanal.
 
 La ruta interactiva aplica el plan aprobado de aislamiento, supervisión y recuperación.
 No podrá escribir en el historial publicado ni utilizar datos operacionales. El
@@ -147,6 +161,7 @@ Antes de publicar se registrarán:
 | Arranque desde sesión nueva | Pendiente |
 | Procedencia sintética y ausencia de acceso operacional | Debe comprobarse en el ensayo de interfaz |
 | Integridad y consulta sin optimizador | Pruebas previas existentes; repetir sobre el paquete académico |
+| Ejecución académica de CP-SAT en Linux (Google Colab) | Validada con Python 3.13.18 y OR-Tools 9.15.6755; resultado OPTIMAL, 2/2 trayectos y evidencia pública disponible |
 
 Los resultados de los tests del visor y de la auditoría de publicación deben
 consultarse en [validacion.md](validacion.md). Un fixture de test no se incorpora

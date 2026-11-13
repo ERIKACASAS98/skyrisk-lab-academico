@@ -7,8 +7,23 @@ y consultar escenarios trazables sin iniciar automáticamente el optimizador.
 La entrega objetivo comprende dos modalidades: **optimización interactiva de dos
 trayectos mediante un botón explícito** y **consulta histórica como respaldo**.
 Ambas modalidades están implementadas. El botón interactivo permanece
-deshabilitado cuando la admisión no demuestra al menos 2 GiB libres; el primer
-ensayo real sigue pendiente de autorización y no se ha obtenido un resultado.
+deshabilitado cuando la admisión no demuestra al menos 2 GiB libres.
+
+El 13 de noviembre de 2026 se realizó una ejecución real del escenario
+académico en Google Colab, utilizando Python 3.13.18 y OR-Tools 9.15.6755.
+
+El optimizador CP-SAT obtuvo el estado OPTIMAL, con dos trayectos confirmados,
+sin operaciones pendientes y una solución declarada COMPLETA y publicable.
+
+La aeronave HK-049 realizó la secuencia sintética BOG-MDE-BOG,
+respetando los 60 minutos mínimos de tránsito.
+
+La evidencia depurada se conserva en:
+docs/evidencias/evidencia_cpsat_publica.json
+
+Esta validación corresponde exclusivamente al escenario académico de
+dos trayectos. No demuestra la optimización de la operación semanal completa
+ni constituye una prueba de despliegue de Streamlit en la nube.
 
 El [plan de integración del botón Optimizar](docs/entrega1/plan_optimizacion_interactiva.md)
 define admisión, procesos propios, límites y pruebas antes de habilitarlo.
@@ -147,7 +162,7 @@ requieren autorización adicional. `.gitignore` no retira archivos ya versionado
 No use el botón semanal de la aplicación profesional como sustituto del ejemplo
 pequeño: el filtro de jornada no reduce el tamaño de esa optimización.
 
-## Producción de evidencia CP-SAT: implementada, pendiente del primer ensayo
+## Producción de evidencia CP-SAT: primera ejecución real validada
 
 En el entorno profesional local existe un arnés del paso 1 que prepara SQLite
 temporal real, dos trayectos, un máximo de 94 candidatos y recuperación desde
@@ -158,7 +173,40 @@ del repositorio público.
 El ensayo exige al menos **2 GiB de RAM libre**, configuración presentada y
 activación explícita. Sus límites supervisados son 30 segundos de solver,
 60 segundos para el productor, 15 segundos para el recuperador y 90 segundos
-para el conjunto. No se ha ejecutado por falta de RAM en el equipo revisado.
+para el conjunto.
+El primer ensayo no pudo ejecutarse en el equipo local porque
+disponía de menos de 2 GiB de RAM libre.
+
+Por esta razón, el 13 de noviembre de 2026 se trasladó una copia
+del demostrador académico a Google Colab, sin modificar el motor
+de optimización ni reducir sus restricciones de seguridad.
+
+La evaluación de admisión autorizó la ejecución y CP-SAT obtuvo
+los siguientes resultados:
+
+- Estado del solver: OPTIMAL.
+- Objetivo alcanzado: 2 de 2 trayectos.
+- Cota superior: 2.
+- Variables: 94.
+- Restricciones: 49.
+- Tiempo de resolución: 0.012 segundos.
+- Aeronave asignada: HK-049.
+- Secuencia: BOG-MDE-BOG.
+- Tránsito entre trayectos: 60 minutos.
+- Operaciones pendientes: 0.
+- Estado general: COMPLETA.
+- Evidencia publicable: True.
+
+La ejecución utilizó el perfil ORIGINAL, con cuatro trabajadores
+configurados y un límite de 30 segundos para el solver.
+
+Los resultados corresponden exclusivamente al escenario sintético
+de dos trayectos. No representan una validación de la operación
+comercial completa ni del despliegue público de Streamlit.
+
+La evidencia está disponible en
+`docs/evidencias/evidencia_cpsat_publica.json`.
+
 La versión actual ofrece un botón explícito y un modelo académico autónomo que no
 importa el planificador productivo ni SQLite. Utiliza procesos productor y
 recuperador, almacén temporal, supervisión y cancelación cooperativa. La admisión
@@ -171,10 +219,12 @@ la memoria efectiva asignada al contenedor, además de la RAM informada por el h
 | --- | --- |
 | Suite profesional previa | 112 pruebas aprobadas y aceptadas en la etapa anterior; no reejecutadas en esta preparación |
 | Guardas adicionales del paso 1 | 12 casos preparados, pendientes de ejecución |
-| SQLite real temporal → CP-SAT → proceso recuperador | Preparado; todavía sin resultado observado |
-| Optimización interactiva desde Streamlit | Implementada y probada con proceso simulado; primer CP-SAT real no ejecutado |
+| Ejecución académica CP-SAT → proceso recuperador | Ejecución real validada en Google Colab; resultado OPTIMAL, dos trayectos confirmados y evidencia recuperada |
+| Optimización interactiva desde Streamlit | Interfaz implementada y probada; ejecución real del motor verificada por separado en Google Colab, no desde la interfaz desplegada |
 | Resultado individual de la corrida histórica 896/966 | No recuperado; no se utiliza como evidencia reproducible |
 | Arranque público y enlace cloud | Pendientes de publicación, despliegue y comprobación |
+| Pruebas automatizadas académicas | 48 pruebas aprobadas en Python 3.14, ejecutadas localmente el 12 de noviembre de 2026 |
+| Ejecución CP-SAT en Google Colab | OPTIMAL; objetivo 2/2; 94 variables; 49 restricciones; aeronave HK-049; estado COMPLETA y publicable |
 
 La auditoría profesional y sus limitaciones históricas se conservan localmente,
 fuera del paquete público. Las pruebas del visor deben registrarse por separado
@@ -196,9 +246,11 @@ El despliegue real es un requisito de la entrega y todavía está pendiente.
    el despliegue y evaluar un proveedor cloud que permita Python 3.14, conservando
    la versión profesional.
 5. Comprobar desde una sesión nueva que el arranque y la consulta muestran solo
-   datos sintéticos y no ejecutan CP-SAT ni conectan SQLite. Cuando la modalidad
-   interactiva ya implementada sea autorizada para su primer ensayo, verificar por separado su botón,
-   admisión de recursos, almacén temporal y resultado; no declarar completas ambas
+   datos sintéticos y no ejecutan CP-SAT ni conectan SQLite. Aunque el motor CP-SAT ya fue ejecutado y validado en Google Colab,
+   todavía debe verificarse su funcionamiento desde la interfaz
+   desplegada de Streamlit, incluyendo el botón de optimización,
+   la admisión de recursos, el almacén temporal y la recuperación
+   del resultado. no declarar completas ambas
    modalidades antes de esa prueba.
 6. Registrar URL, commit, fecha UTC, versiones, captura y resultado de la prueba
    de arranque. Verificar de nuevo el enlace antes de entregar.

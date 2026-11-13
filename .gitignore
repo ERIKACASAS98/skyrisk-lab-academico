@@ -1,0 +1,46 @@
+# Paquete acad?mico p?blico: denegar todo salvo esta lista expl?cita.
+# No elimina archivos locales ni retira archivos ya seguidos por Git.
+# Antes de publicar, auditar tambi?n el ?ndice con --indice.
+/**
+!/academico/
+/academico/**
+!/demo/
+/demo/**
+!/docs/
+/docs/**
+!/herramientas/
+/herramientas/**
+!/planificacion_comercial/
+/planificacion_comercial/**
+!/tests/
+/tests/**
+!/demo/escenarios/
+/demo/escenarios/**
+!/docs/entrega1/
+/docs/entrega1/**
+!/herramientas/validadores/
+/herramientas/validadores/**
+!/.gitignore
+!/README.md
+!/academico/__init__.py
+!/academico/ejecucion.py
+!/academico/escenarios.py
+!/academico/worker.py
+!/app_academica.py
+!/demo/README.md
+!/demo/entradas_paso1.json
+!/demo/escenarios/.gitkeep
+!/docs/entrega1/arquitectura.md
+!/docs/entrega1/compatibilidad_cloud.md
+!/docs/entrega1/investigacion.md
+!/docs/entrega1/plan_optimizacion_interactiva.md
+!/docs/entrega1/presentacion.md
+!/docs/entrega1/validacion.md
+!/herramientas/validadores/auditar_paquete_academico.py
+!/planificacion_comercial/__init__.py
+!/planificacion_comercial/trazabilidad_escenarios.py
+!/requirements.txt
+!/tests/test_app_academica.py
+!/tests/test_ejecucion_academica.py
+!/tests/test_escenarios_academicos.py
+!/tests/test_publicacion_academica.py

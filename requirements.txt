@@ -1,0 +1,5 @@
+# Demostrador académico: consulta histórica y CP-SAT solo mediante botón explícito.
+streamlit==1.66.1
+pandas==3.0.0
+ortools==9.15.6755
+psutil==7.2.2

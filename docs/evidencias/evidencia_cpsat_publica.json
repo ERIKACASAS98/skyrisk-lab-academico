@@ -1,0 +1,372 @@
+﻿{
+    "proyecto":  "SkyRisk Lab AcadÃ©mico",
+    "tipo":  "EjecuciÃ³n real CP-SAT en Google Colab",
+    "resultado":  {
+                      "correcto":  true,
+                      "historico":  true,
+                      "run_id":  "SRL-COM-20261113T043019927782Z-6c9e6978325b4c4ea86005b8f6c54433",
+                      "resultado":  {
+                                        "run_id":  "SRL-COM-20261113T043019927782Z-6c9e6978325b4c4ea86005b8f6c54433",
+                                        "estado":  "COMPLETA",
+                                        "fuente":  "CIERRE_VALIDADO",
+                                        "publicable":  true,
+                                        "escenario":  {
+                                                          "confirmados":  {
+                                                                              "PASO1-SINT-N001":  {
+                                                                                                      "aeronave":  "HK-049",
+                                                                                                      "destino":  "MDE",
+                                                                                                      "id_vuelo":  "PASO1-SINT-N001",
+                                                                                                      "llegada_utc":  "2026-11-09T11:00:00+00:00",
+                                                                                                      "operacion_origen":  null,
+                                                                                                      "origen":  "BOG",
+                                                                                                      "ruta_maestra":  "BOG-MDE",
+                                                                                                      "salida_utc":  "2026-11-09T10:00:00+00:00",
+                                                                                                      "tipo":  "N"
+                                                                                                  },
+                                                                              "PASO1-SINT-N002":  {
+                                                                                                      "aeronave":  "HK-049",
+                                                                                                      "destino":  "BOG",
+                                                                                                      "id_vuelo":  "PASO1-SINT-N002",
+                                                                                                      "llegada_utc":  "2026-11-09T13:00:00+00:00",
+                                                                                                      "operacion_origen":  null,
+                                                                                                      "origen":  "MDE",
+                                                                                                      "ruta_maestra":  "MDE-BOG",
+                                                                                                      "salida_utc":  "2026-11-09T12:00:00+00:00",
+                                                                                                      "tipo":  "N"
+                                                                                                  }
+                                                                          },
+                                                          "flota":  {
+                                                                        "HK-001":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-002":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-003":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-004":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-005":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-006":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-007":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-008":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-009":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-010":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-011":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-012":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-013":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-014":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-015":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-016":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-017":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-018":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-019":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-023":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-024":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-025":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-026":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-027":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-028":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-029":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-030":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-031":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-032":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-033":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-034":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-035":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-036":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-037":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-038":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-039":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-040":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-041":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-042":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-043":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-044":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-045":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-046":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-047":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-048":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-049":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   },
+                                                                        "HK-050":  {
+                                                                                       "categoria":  "REGULAR"
+                                                                                   }
+                                                                    },
+                                                          "propuestas":  {
+
+                                                                         },
+                                                          "protegidos":  {
+
+                                                                         }
+                                                      },
+                                        "parametros":  {
+                                                           "configuracion_solver":  {
+                                                                                        "nombre":  "ORIGINAL",
+                                                                                        "parametros":  {
+                                                                                                           "cp_model_presolve":  false,
+                                                                                                           "max_time_in_seconds":  30,
+                                                                                                           "num_search_workers":  4
+                                                                                                       }
+                                                                                    },
+                                                           "limites":  {
+                                                                           "almacenamiento_mib":  50,
+                                                                           "candidatos_maximos":  94,
+                                                                           "presupuesto_supervisado_total_segundos":  90,
+                                                                           "productor_rss_mib":  512,
+                                                                           "ram_libre_minima_gib":  2,
+                                                                           "solver_segundos":  30,
+                                                                           "transito_minutos":  60,
+                                                                           "trayectos":  2,
+                                                                           "ventanas":  1
+                                                                       },
+                                                           "perfil_solver":  "ORIGINAL"
+                                                       },
+                                        "resultados_individuales":  {
+                                                                        "confirmados":  [
+                                                                                            {
+                                                                                                "aeronave":  "HK-049",
+                                                                                                "destino":  "MDE",
+                                                                                                "id_vuelo":  "PASO1-SINT-N001",
+                                                                                                "llegada_utc":  "2026-11-09T11:00:00+00:00",
+                                                                                                "operacion_origen":  null,
+                                                                                                "origen":  "BOG",
+                                                                                                "ruta_maestra":  "BOG-MDE",
+                                                                                                "salida_utc":  "2026-11-09T10:00:00+00:00",
+                                                                                                "tipo":  "N"
+                                                                                            },
+                                                                                            {
+                                                                                                "aeronave":  "HK-049",
+                                                                                                "destino":  "BOG",
+                                                                                                "id_vuelo":  "PASO1-SINT-N002",
+                                                                                                "llegada_utc":  "2026-11-09T13:00:00+00:00",
+                                                                                                "operacion_origen":  null,
+                                                                                                "origen":  "MDE",
+                                                                                                "ruta_maestra":  "MDE-BOG",
+                                                                                                "salida_utc":  "2026-11-09T12:00:00+00:00",
+                                                                                                "tipo":  "N"
+                                                                                            }
+                                                                                        ],
+                                                                        "estado_inicial_incompleto":  [
+
+                                                                                                      ],
+                                                                        "pendientes":  [
+
+                                                                                       ]
+                                                                    },
+                                        "diagnosticos":  [
+                                                             {
+                                                                 "candidatos":  94,
+                                                                 "construccion_y_resolucion_s":  0.012877334999984669,
+                                                                 "cota":  2.0,
+                                                                 "estado_solver":  "OPTIMAL",
+                                                                 "motivo_terminacion":  "OPTIMALIDAD_DEMOSTRADA",
+                                                                 "objetivo":  2.0,
+                                                                 "parametros_efectivos":  {
+                                                                                              "cp_model_presolve":  false,
+                                                                                              "max_time_in_seconds":  30,
+                                                                                              "num_search_workers":  4
+                                                                                          },
+                                                                 "perfil_solver":  "ORIGINAL",
+                                                                 "resolucion_s":  0.012038070000000001,
+                                                                 "restricciones":  49,
+                                                                 "tiempo_determinista":  0.0027957006,
+                                                                 "variables":  94
+                                                             }
+                                                         ],
+                                        "ventanas":  [
+                                                         {
+                                                             "candidatos":  94,
+                                                             "construccion_y_resolucion_s":  0.012877334999984669,
+                                                             "cota":  2.0,
+                                                             "estado_solver":  "OPTIMAL",
+                                                             "motivo_terminacion":  "OPTIMALIDAD_DEMOSTRADA",
+                                                             "objetivo":  2.0,
+                                                             "parametros_efectivos":  {
+                                                                                          "cp_model_presolve":  false,
+                                                                                          "max_time_in_seconds":  30,
+                                                                                          "num_search_workers":  4
+                                                                                      },
+                                                             "perfil_solver":  "ORIGINAL",
+                                                             "resolucion_s":  0.012038070000000001,
+                                                             "restricciones":  49,
+                                                             "tiempo_determinista":  0.0027957006,
+                                                             "variables":  94
+                                                         }
+                                                     ],
+                                        "eventos":  [
+                                                        {
+                                                            "secuencia":  1,
+                                                            "tipo":  "EJECUCION_INICIADA",
+                                                            "hash":  "38fd35c68138641ea5cb59a1adcf88309092e061a6a5aa8f1c41a1d9bc07f7de",
+                                                            "creado_utc":  "2026-11-13T04:30:19.928292+00:00"
+                                                        },
+                                                        {
+                                                            "secuencia":  2,
+                                                            "tipo":  "MODELO_PREPARADO",
+                                                            "hash":  "af9eb466e0b0f1b3afd66d2fa72b4773cddb73403052714a14cd66f148b63d15",
+                                                            "creado_utc":  "2026-11-13T04:30:19.938840+00:00"
+                                                        },
+                                                        {
+                                                            "secuencia":  3,
+                                                            "tipo":  "SOLVER_FINALIZADO",
+                                                            "hash":  "f1fd8069e64d3cd560c6b68235fdcf65dd57fe7714f61943b5d4a2dac05ca39d",
+                                                            "creado_utc":  "2026-11-13T04:30:19.947226+00:00"
+                                                        },
+                                                        {
+                                                            "secuencia":  4,
+                                                            "tipo":  "VENTANA_VALIDADA",
+                                                            "hash":  "acfc466808840ca08170a64aea99866fe25433164737e34a380b2d876f780a02",
+                                                            "creado_utc":  "2026-11-13T04:30:19.956660+00:00"
+                                                        }
+                                                    ],
+                                        "hashes":  {
+                                                       "cierre/manifest.json":  "e130b77a352760a7e7b3e68f531e2a55bee9ce849f80b9f20ff665446653f504",
+                                                       "cierre/datos.json":  "edf6a46042c00fbb3234317ccbc542b053d5fd3251e86cb0c6baea4821d46b75",
+                                                       "eventos/00000004/manifest.json":  "f5e90968b8ee6edfdb821f86a57452dfff8aa80c20562a2c055204bc298d7902",
+                                                       "eventos/00000004/datos.json":  "0aaad1a372da127bc56d94815c095df754af520f437b00e117338758348b45ae",
+                                                       "eventos/00000002/manifest.json":  "43f3af3bc1fb95464ad5ae1fd0f43f8f5343f0c92a62c6e098ae458f4465d466",
+                                                       "eventos/00000002/datos.json":  "f0241a690456ae44e38f245756ba909439a926cfb7baa386aaf278cc2129371c",
+                                                       "eventos/00000001/manifest.json":  "913890c3468d9272d15cc4397fc4319066f1cd0b0a441d10ab2a3f3747e45823",
+                                                       "eventos/00000001/datos.json":  "dc4046e5fdefed4f3368b65abf5e852ba081cb38d31dcdbe08b45da80e395093",
+                                                       "eventos/00000003/manifest.json":  "18060ea37df3b00f684380b99f6937a86a9719e82949223dd14ed6ca916a21cb",
+                                                       "eventos/00000003/datos.json":  "fe4e323f54bb93283301e63ad683f65173444c9385970411c9f109be9ffc3f1c"
+                                                   },
+                                        "bytes":  34681
+                                    },
+                      "productor":  {
+                                        "fase":  "productor",
+                                        "wall_s":  0.6155369990001418,
+                                        "cpu_s":  0.71,
+                                        "pico_rss_muestreado_bytes":  122761216,
+                                        "bytes_raiz":  35523,
+                                        "archivos_raiz":  13
+                                    },
+                      "recuperador":  {
+                                          "fase":  "recuperador",
+                                          "wall_s":  0.008843477000027633,
+                                          "cpu_s":  0.010000000000000004,
+                                          "pico_rss_muestreado_bytes":  19460096,
+                                          "bytes_raiz":  35880,
+                                          "archivos_raiz":  15
+                                      },
+                      "supervision_productor":  {
+                                                    "wall_s":  0.8099121630000354,
+                                                    "pico_rss_bytes":  137322496,
+                                                    "cancelacion_solicitada":  null
+                                                },
+                      "supervision_recuperador":  {
+                                                      "wall_s":  0.10250992200008113,
+                                                      "pico_rss_bytes":  385024,
+                                                      "cancelacion_solicitada":  null
+                                                  },
+                      "wall_total_s":  0.9137280129998544,
+                      "admision":  {
+                                       "admitido":  true,
+                                       "motivos":  [
+
+                                                   ],
+                                       "ram_host_disponible_bytes":  12289286144,
+                                       "ram_host_total_bytes":  13605818368,
+                                       "contenedor":  {
+                                                          "estado":  "SIN_LIMITE_FINITO",
+                                                          "margen_bytes":  null,
+                                                          "limite_bytes":  null,
+                                                          "uso_bytes":  null,
+                                                          "cpu_max":  null
+                                                      },
+                                       "cpu_logicos":  2,
+                                       "entrada_sha256":  "6b53b8d5251866a283437be9039bb55a9d94d8fdf86cb21395ea76ff63dc9885",
+                                       "perfil":  "ORIGINAL",
+                                       "trabajadores":  4,
+                                       "solver_segundos":  30,
+                                       "cancelacion":  "COOPERATIVA_NO_FORZADA"
+                                   },
+                      "hash_escenario":  "d9098c26039fb822424a43f44f975ed79be4fc11d17a87faf9f78b0bbfa66039"
+                  }
+}

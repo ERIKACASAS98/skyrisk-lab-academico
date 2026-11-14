@@ -121,3 +121,17 @@ El botón ML usa 1.000 filas y limita los pools de cómputo a un hilo; comparte
 exclusión con CP-SAT. Su mínimo propio de 256 MiB no modifica la admisión de 2 GiB
 del optimizador. La primera importación de Scikit-learn puede ser lenta y su coste
 se incluye en wall_s. Abrir la app y navegar no importa ni entrena Scikit-learn.
+
+
+## Dev Container de desarrollo conciliado
+
+La adición remota b09fb5a se conserva y se corrige a Python 3.13 Bookworm con digest
+verificado del registro Microsoft. El entorno instala los pins de requirements.txt
+en .venv y ejecuta pip check mediante pip --python. No instala paquetes globales ni
+Streamlit adicional. El servidor conserva CORS y XSRF habilitados explícitamente.
+La configuración no determina el Python de Community Cloud; su arranque real y
+la interfaz ML requieren revisión después de la actualización autorizada de main.
+
+La resolución cruzada pip --dry-run para wheels Linux x86-64/Python 3.13 aprobó
+sin instalar paquetes. Es una comprobación previa de resolución; no sustituye una
+instalación limpia real ni prueba todos los marcadores desde un host Linux.

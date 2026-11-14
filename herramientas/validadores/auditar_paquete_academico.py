@@ -18,6 +18,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 PERMITIDOS = frozenset({
+    '.devcontainer/devcontainer.json',
     'docs/entrega1/validacion_colab_entorno_r2.ipynb',
     'herramientas/validadores/preparar_colab.py', 'herramientas/validadores/validar_cpsat_colab.py',
     'docs/entrega1/validacion_colab.ipynb', 'docs/entrega1/colab.md', 'tests/test_colab_academico.py',
@@ -86,6 +87,26 @@ def hallazgos_texto(nombre, contenido):
                              'linea': texto.count('\n', 0, coincidencia.start()) + 1})
     if contenido.startswith(b'SQLite format 3\x00'):
         hallazgos.append({'archivo': nombre, 'tipo': 'SQLITE_PROHIBIDA'})
+    if nombre == '.devcontainer/devcontainer.json':
+        try:
+            datos = json.loads(texto)
+            servidor = datos['postAttachCommand']['server']
+            instalacion = datos['postCreateCommand']
+            claves = {'name', 'image', 'customizations', 'postCreateCommand',
+                      'postAttachCommand', 'portsAttributes', 'forwardPorts'}
+            seguro = (set(datos) <= claves
+                and datos['image'] == 'mcr.microsoft.com/devcontainers/python:1-3.13-bookworm@sha256:0aa711e570b306c02946cdda67587ce8c65978dbb65691341cbcfd4854dfcfff'
+                and servidor == '.venv/bin/python -B -m streamlit run app_academica.py --server.headless true --server.enableCORS true --server.enableXsrfProtection true'
+                and set(datos['postAttachCommand']) == {'server'}
+                and '--without-pip' in instalacion
+                and '--python .venv/bin/python install --only-binary=:all: -r requirements.txt' in instalacion
+                and '--python .venv/bin/python check' in instalacion
+                and not any(x in instalacion for x in ('sudo', '--user', 'pip3 install'))
+                and datos['forwardPorts'] == [8501])
+            if not seguro:
+                hallazgos.append({'archivo': nombre, 'tipo': 'DEVCONTAINER_CONFIGURACION_NO_APROBADA'})
+        except (ValueError, TypeError, KeyError, AttributeError):
+            hallazgos.append({'archivo': nombre, 'tipo': 'DEVCONTAINER_INVALIDO'})
     if nombre == 'docs/evidencias/evidencia_cpsat_publica.json':
         # Copia revisada, normalizando solo CRLF/LF para Git Windows/Linux.
         # Cambiar esta huella requiere revisar de nuevo la evidencia completa.

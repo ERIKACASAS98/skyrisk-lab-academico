@@ -1,5 +1,7 @@
 # Lista academica exacta; no retira archivos ya versionados.
 /**
+!/.devcontainer/
+/.devcontainer/**
 !/.streamlit/
 /.streamlit/**
 !/academico/
@@ -22,6 +24,7 @@
 /docs/evidencias/**
 !/herramientas/validadores/
 /herramientas/validadores/**
+!/.devcontainer/devcontainer.json
 !/.gitignore
 !/.streamlit/config.toml
 !/README.md

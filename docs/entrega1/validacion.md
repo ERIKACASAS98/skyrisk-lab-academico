@@ -443,7 +443,43 @@ El repositorio y main de Streamlit confirmados son
 ERIKACASAS98/skyrisk-lab-academico y main, con app_academica.py como entrada
 esperada y comprobada en el árbol local. Actualizar main puede activar despliegue;
 esta preparación no hace fetch, merge, commit, push ni cambio de configuración.
-La adición remota .devcontainer/devcontainer.json sigue fuera de la política local
-y requiere conciliación autorizada antes de integrar main remota, sin borrarla ni
-aceptar sus opciones silenciosamente. Solo se reutilizan los dos archivos de
+La adición remota .devcontainer/devcontainer.json se concilia posteriormente
+con autorización, según el registro de publicación controlada siguiente. Solo se reutilizan los dos archivos de
 trazabilidad ya publicados, sin modificar módulos operacionales profesionales.
+
+
+## Publicación controlada: conciliación de origin/main
+
+Se creó el commit académico 929b24786304784188fa5ea949b5aee243d45f65 con las 37
+rutas previamente auditadas. Después se obtuvo origin/main y se confirmó que su
+único cambio nuevo era b09fb5ab0ac9354338a4af1458ee0ae5fb0fe1d9, que añadió
+.devcontainer/devcontainer.json. Se integró sin conflictos en desarrollo mediante
+18eb7a9d792d0aba97b823a467df9826e7af86ac, conservando ambos historiales.
+
+La configuración original usaba Python 3.11, pip --user y flags que desactivaban
+CORS/XSRF. Se corrige a Python 3.13 y se conserva explícitamente la protección de
+ambos mecanismos. Imagen verificada por HEAD HTTP 200 en el registro oficial:
+
+`mcr.microsoft.com/devcontainers/python:1-3.13-bookworm@sha256:0aa711e570b306c02946cdda67587ce8c65978dbb65691341cbcfd4854dfcfff`.
+
+La instalación utiliza un venv local sin ensurepip, pip principal con --python y
+los pins de requirements.txt; no usa apt upgrade ni agrega Streamlit sin pin.
+La política añade únicamente .devcontainer/devcontainer.json y pasa de 37 a 38
+rutas. Se agrega una prueba de seguridad de configuración sin eliminar pruebas
+previas. No se ejecuta el contenedor ni se afirma validación pública del botón ML.
+El snapshot original, su manifiesto, entradas y evidencia histórica no se alteran.
+
+Comprobaciones posteriores a la conciliación: 72 pruebas de publicación,
+integridad, recuperación e interfaz aprobadas en 7,583 s, sin errores, fallos ni
+omisiones. Incluyen 13 de publicación (con nueva prueba de protección del Dev
+Container), siete de transporte/runner sin solver, 17 del ejecutor, 24 del lector
+y 11 de AppTest. No se repitió CP-SAT ni entrenamiento ML. AppTest observó
+4,239763 s y pico RSS muestreado 152.608.768 bytes; no es rendimiento de Cloud.
+
+pip check local aprobó. También aprobó la resolución cruzada --dry-run de las
+cinco dependencias y transitivas para wheels Linux x86-64/Python 3.13, con informe
+local excluido de Git en artifacts/publicacion/resolucion_linux_py313.json.
+No se instalaron esos paquetes ni se ejecutó Linux: la resolución cruzada desde
+Windows comprueba disponibilidad y compatibilidad del resolvedor para esos tags,
+no todos los comportamientos de marcadores o del runtime real de Community Cloud.
+El contenedor tampoco fue arrancado; la imagen se comprobó en el registro.

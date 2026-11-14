@@ -24,6 +24,19 @@ class PublicacionAcademicaTests(unittest.TestCase):
         (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
         nombre = 'demo/entradas_ampliadas.json'
         (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
+        nombre = '.devcontainer/devcontainer.json'
+        (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
+
+    def test_devcontainer_conserva_protecciones_y_python_compatible(self):
+        nombre = '.devcontainer/devcontainer.json'
+        contenido = (a.ROOT / nombre).read_bytes()
+        self.assertEqual(a.hallazgos_texto(nombre, contenido), [])
+        for bandera in ('enableCORS', 'enableXsrfProtection'):
+            inseguro = contenido.replace((bandera + ' true').encode(), (bandera + ' false').encode())
+            self.assertIn('DEVCONTAINER_CONFIGURACION_NO_APROBADA', {h['tipo'] for h in a.hallazgos_texto(nombre, inseguro)})
+        datos = json.loads(contenido)
+        datos['image'] = 'mcr.microsoft.com/devcontainers/python:1-3.11-bookworm'
+        self.assertTrue(a.hallazgos_texto(nombre, json.dumps(datos).encode()))
 
     def test_demo_ampliada_operacional_o_excesiva_no_es_publicable(self):
         nombre = 'demo/entradas_ampliadas.json'

@@ -1,10 +1,10 @@
 
 # SkyRisk Lab ✈️
 
-> Rama de desarrollo `desarrollo/ampliacion-academica`: la ampliación v2 y ML
-> son cambios locales, sin publicar. La demostración pública enlazada más abajo
-> corresponde a la versión original de dos trayectos. Estado y pruebas de la
-> ampliación al final de este documento.
+> Ampliación académica v2: escenario de 12 trayectos, contingencias y Ridge sobre
+> datos sintéticos. CP-SAT está validado en Colab y ML evaluado localmente.
+> La ejecución real de esta ampliación desde la interfaz pública se verifica
+> por separado del código publicado. Evidencias y límites al final del documento.
 ### Inteligencia operacional aplicada a la aviación
 
 SkyRisk Lab es un proyecto de inteligencia operacional aeronáutica que busca integrar inteligencia artificial, analítica de datos y optimización matemática para apoyar la planificación y la toma de decisiones en las operaciones aéreas.
@@ -503,7 +503,7 @@ El proyecto aborda los componentes solicitados en la entrega:
 ## Ampliación académica v2 en desarrollo — 13/11/2026
 
 Esta rama conserva el caso original, el inventario de 47 regulares y tres
-reservas, y los bytes de la evidencia Colab. No se ha publicado esta ampliación.
+reservas, y los bytes de la evidencia Colab. Esta revisión incorpora la ampliación.
 No modifica SQLite ni módulos profesionales.
 
 La vista **Simulación ampliada** presenta 12 vuelos nacionales entre BOG, MDE,
@@ -605,7 +605,7 @@ navegación y acciones, sin navegador ni servidor público. La validación Colab
 acredita CP-SAT y sus dependencias mínimas; no sustituye la instalación Linux del
 stack completo de Streamlit/Scikit-learn ni el recorrido público real del botón ML.
 Faltan esas comprobaciones y autorización para publicar. La política actual admite
-37 rutas exactas, incluido el cuaderno externo R2; no añade artefactos ni resultados
+38 rutas exactas, incluidos el cuaderno externo R2 y el Dev Container conciliado; no añade artefactos ni resultados
 automáticamente. No hacer commit, push, merge o despliegue sin autorización.
 
 ## Reproducción de las seis pruebas aprobadas en Colab
@@ -644,3 +644,18 @@ en aquel snapshot: son revisiones externas y trazables, sin cambiar el optimizad
 La instalación y ejecución completa del cuaderno externo R2 no se acredita solo
 por el informe del snapshot: debe distinguirse de la corrección manual del entorno
 con la que se obtuvieron las seis aprobaciones.
+
+
+### Dev Container conciliado con el trabajo remoto
+
+Se conserva en el historial la adición remota b09fb5a y se corrige únicamente
+su configuración de desarrollo. La imagen Python 3.13 Bookworm de Microsoft
+se fija por digest; su existencia se comprobó en el registro oficial. Las
+instalaciones se dirigen a .venv mediante pip --python, usando requirements.txt,
+sin pip --user, instalaciones Streamlit adicionales ni actualizaciones apt.
+El arranque usa app_academica.py y mantiene CORS y XSRF activados explícitamente.
+
+Esta configuración corresponde a Codespaces/Dev Containers. Community Cloud
+continúa usando su Python configurado y requirements.txt; no se confunden ambos
+entornos. La validación estática y las pruebas de política no equivalen a ejecutar
+un contenedor ni al entrenamiento real desde la interfaz pública.

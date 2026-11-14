@@ -5,9 +5,18 @@ duración y formato al enunciado oficial. La fecha límite es el 16 de noviembre
 2026. La exposición debe diferenciar implementación, evidencia observada y trabajo
 pendiente.
 
-La entrega objetivo incluye dos modalidades: optimización interactiva de dos
-trayectos mediante botón explícito y consulta histórica como respaldo. Ambas están
-implementadas; el primer ensayo real y el despliegue siguen pendientes.
+La presentación vigente del 14/11/2026 comienza en el resumen de 12 trayectos,
+cuatro aeropuertos y cuatro aeronaves activas. Continuar por Trayectos y
+Planificación y contingencias; mostrar resultados únicamente si la ejecución
+autorizada se completa y valida. Si faltan recursos, explicar el estado de espera.
+Validación técnica conserva el caso original de dos trayectos y su histórico.
+Predicción de retrasos permite evaluar el modelo mediante una acción explícita.
+La evidencia anterior de Colab no acredita una nueva ejecución local. Esta revisión
+no se ha publicado ni desplegado. Consultar el informe vigente en `validacion.md`.
+
+El guion de diapositivas que sigue se conserva como material previo de apoyo;
+para el recorrido de la interfaz y los resultados de pruebas prevalece el párrafo
+anterior y el informe del 14/11/2026.
 
 ## 1. Problema y valor
 

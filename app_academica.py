@@ -16,7 +16,7 @@ st.set_page_config(page_title='SkyRisk Lab | Entrega 1', page_icon=':material/fl
 
 def mostrar_caso(datos, sha):
     st.subheader('Caso sintético de validación')
-    st.info('Estas son entradas de prueba. Todavía no representan asignaciones obtenidas por CP-SAT.')
+    st.caption('Caso original de dos trayectos conservado para validación.')
     origen = st.selectbox('Aeropuerto de origen', ['Todos', 'BOG', 'MDE'], key='origen_academico')
     operaciones = [v for v in datos['operaciones'] if origen == 'Todos' or v['origen'] == origen]
 
@@ -40,27 +40,6 @@ def mostrar_caso(datos, sha):
 
     st.caption(f'{len(operaciones)} trayectos visibles. Todos los horarios incluyen zona UTC.')
 
-    st.markdown("#### Parámetros del escenario")
-
-    limites = datos['limites_ensayo']
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric("Trayectos", limites["trayectos"])
-    col2.metric("Candidatos máximos", limites["candidatos_maximos"])
-    col3.metric("Tránsito mínimo", f'{limites["transito_minutos"]} min')
-    col4.metric("Tiempo de optimización", f'{limites["solver_segundos"]} s')
-
-    st.caption(f"Perfil del ensayo: {datos['perfil_propuesto']}")
-
-    with st.expander("Configuración técnica completa"):
-        st.json(limites)
-
-    st.caption('El tránsito del ejemplo es de 60 minutos. Las tres reservas están excluidas de la programación base.')
-    with st.expander('Inventario sintético y evidencia de entrada'):
-        st.write('Regulares:', ', '.join(datos['flota']['regulares']))
-        st.write('Reservas excluidas:', ', '.join(datos['flota']['reservas']))
-        st.code(sha, language=None)
     st.download_button('Descargar entradas sintéticas', texto_json(datos),
                        file_name='skyrisk_entradas_sinteticas.json', mime='application/json')
 
@@ -70,8 +49,8 @@ def mostrar_resultados():
     try:
         ids = listar_escenarios()
         if not ids:
-            st.warning('SIN_EJECUCION: no hay escenarios comerciales sintéticos publicados en este demostrador.')
-            st.write('El catálogo de runs íntegros está vacío. La evidencia Colab se presenta por separado como resumen histórico.')
+            st.warning('SIN_EJECUCION: no hay ejecuciones completas archivadas en este catálogo.')
+            st.caption('La evidencia de Colab se conserva por separado como histórico.')
             mostrar_evidencia_colab()
             return
         elegido = st.selectbox('Ejecución sintética', ids, key='run_academico')
@@ -82,8 +61,6 @@ def mostrar_resultados():
         st.caption('Integridad verificada mediante hashes. Esta comprobación no certifica una operación real.')
         if not r['publicable']:
             st.warning('Evidencia parcial: este checkpoint no equivale a una ejecución completa publicable.')
-        st.write('Perfil archivado:', r['parametros']['perfil_solver'])
-        st.json(r['parametros'].get('configuracion_solver', {}))
         if r['escenario'] is not None:
             for grupo, titulo in (('confirmados', 'Asignaciones confirmadas'),
                                   ('protegidos', 'Compromisos protegidos'),
@@ -93,11 +70,6 @@ def mostrar_resultados():
         for grupo in ('pendientes', 'estado_inicial_incompleto'):
             st.write(grupo.replace('_', ' ').capitalize())
             st.dataframe(r['resultados_individuales'].get(grupo, []), hide_index=True, width='stretch')
-        with st.expander('Diagnósticos, eventos y hashes'):
-            st.dataframe(r['diagnosticos'], hide_index=True, width='stretch')
-            st.dataframe(r['eventos'], hide_index=True, width='stretch')
-            st.json(r['hashes'])
-            st.caption(f"Tamaño verificado: {r['bytes']:,} bytes.")
         st.download_button('Descargar resumen consultado', texto_json(r),
                            file_name=f"{r['run_id']}-consulta.json", mime='application/json')
         mostrar_evidencia_colab()
@@ -114,7 +86,6 @@ def mostrar_evidencia_colab():
             st.write('run_id:', r['run_id'])
             st.dataframe(list(r['resultado']['escenario']['confirmados'].values()),
                          hide_index=True, width='stretch')
-            st.json(r['resultado']['diagnosticos'])
             st.caption('Huella de la copia revisada y hash del escenario comprobados. '
                        'El resumen no contiene los archivos originales para revalidar toda la cadena de eventos.')
             st.download_button('Descargar evidencia histórica Colab', texto_json(evidencia),
@@ -138,15 +109,6 @@ def mostrar_resultado_interactivo(historico):
     c.metric('Cota', diagnostico.get('cota', 'No disponible'))
     d.metric('Solver', diagnostico.get('estado_solver', 'No disponible'))
     st.dataframe(list(r['escenario']['confirmados'].values()), hide_index=True, width='stretch')
-    st.write('Diagnóstico y parámetros efectivos')
-    st.json(diagnostico)
-    with st.expander('Recursos, recuperación e integridad'):
-        st.json({'productor': historico['productor'], 'recuperador': historico['recuperador'],
-                 'supervision_productor': historico['supervision_productor'],
-                 'supervision_recuperador': historico['supervision_recuperador'],
-                 'wall_total_s': historico['wall_total_s'],
-                 'hash_escenario': historico['hash_escenario'],
-                 'admision': historico['admision']})
     st.download_button('Descargar resultado validado', texto_json(historico),
                        file_name=f"{historico['run_id']}-resultado.json", mime='application/json')
 
@@ -156,46 +118,7 @@ def mostrar_optimizacion(datos):
     st.selectbox('Escenario sintético', [datos['id_escenario']], key='escenario_optimizar_academico')
     admision = evaluar_admision()
 
-    st.caption('Perfil de optimización: ORIGINAL · 4 trabajadores')
-
-    limites = datos['limites_ensayo']
-
-    col1, col2, col3, col4 = st.columns(4, gap='medium')
-
-    col1.metric('✈ Trayectos', limites['trayectos'])
-    col2.metric('◈ Candidatos máximos', limites['candidatos_maximos'])
-    col3.metric('◷ Tránsito mínimo', f"{limites['transito_minutos']} min")
-    col4.metric('◴ Tiempo del solver', f"{limites['solver_segundos']} s")
-
-    with st.expander('Ver configuración técnica completa'):
-        st.json(limites)
-
-
-    st.markdown("#### Motor de optimización CP-SAT")
-
-    if admision["admitido"]:
-        st.success(
-            "🟢 SISTEMA DISPONIBLE · Recursos suficientes. "
-            "La optimización comenzará únicamente cuando autorices la ejecución."
-        )
-    else:
-        st.warning(
-            "🟡 SISTEMA EN ESPERA · Optimización deshabilitada: "
-            + ", ".join(admision["motivos"])
-        )
-
-        with st.expander("Consultar motivos de la restricción"):
-            for motivo in admision["motivos"]:
-                st.write(f"• {motivo}")
-
-    st.caption(
-        "El sistema verifica los recursos antes de ejecutar CP-SAT. "
-        "No se generan resultados simulados para reemplazar una ejecución real."
-    )
-
-    with st.expander('Comprobación de recursos'):
-        st.json(admision)
-        st.caption('Los límites son supervisados. La cancelación cooperativa no garantiza una terminación forzada.')
+    mostrar_disponibilidad(admision)
     with st.form('formulario_optimizacion_academica', border=False):
         confirmado = st.checkbox('Confirmo que ejecutaré únicamente el caso sintético de dos trayectos.',
                                   key='confirmar_optimizacion_academica')
@@ -223,17 +146,13 @@ def mostrar_optimizacion(datos):
         st.caption('Aún no existe un resultado CP-SAT válido en esta sesión.')
 
 
-def mostrar_simulacion():
-    st.subheader('Simulación nacional ampliada')
-    datos = cargar_simulacion()
-    st.info('Caso sintético independiente: hasta 12 trayectos, cuatro aeropuertos y cuatro aeronaves activas. '
-            'Las otras regulares y las tres reservas no están disponibles para esta simulación.')
+def mostrar_simulacion(datos):
+    st.subheader('Planificar los 12 trayectos y resolver una contingencia')
     st.dataframe(datos['operaciones'], hide_index=True, width='stretch')
     st.write('Ubicaciones y disponibilidad de las aeronaves activas')
     st.dataframe([dict(aeronave=m, **estado) for m, estado in datos['activas'].items()], hide_index=True, width='stretch')
     admision = evaluar_admision()
-    if not admision['admitido']:
-        st.warning('Optimización ampliada deshabilitada: ' + ', '.join(admision['motivos']))
+    mostrar_disponibilidad(admision)
     with st.form('contingencia_ampliada'):
         afectada = st.selectbox('Aeronave indisponible durante toda la jornada', sorted(datos['activas']), key='afectada_ampliada')
         confirmado = st.checkbox('Confirmo la simulación sintética y la contingencia de jornada completa.', key='confirmar_ampliada')
@@ -251,31 +170,32 @@ def mostrar_simulacion():
                 st.session_state['error_ampliada'] = str(error)
     if st.session_state.get('error_ampliada'):
         st.error('Nueva simulación fallida: ' + st.session_state['error_ampliada'])
+        if st.session_state.get('simulacion_ampliada_valida'):
+            st.info('Se conserva el último resultado válido de esta sesión.')
     historico = st.session_state.get('simulacion_ampliada_valida')
     if historico:
         r = historico['resultado']
         st.caption('HISTÓRICO DE SESIÓN · cambiar la selección no vuelve a ejecutar el solver. '
                    'El temporal se elimina al finalizar; descargue el resultado para conservarlo.')
         st.write('run_id:', historico['run_id'], '| Aeronave afectada en este resultado:', r['afectada'])
+        if r['afectada'] != afectada:
+            st.info('El resultado mostrado corresponde a otra aeronave. Ejecute de nuevo para actualizarlo.')
         a, b, c = st.columns(3)
         a.metric('Atendidos originales', len(r['original']['asignaciones']))
         b.metric('Atendidos recuperados', len(r['recuperada']['asignaciones']))
         c.metric('Pendientes recuperados', len(r['recuperada']['pendientes']))
         st.dataframe(r['comparacion'], hide_index=True, width='stretch')
         st.write('Pendientes:', r['recuperada']['pendientes'])
-        with st.expander('Diagnósticos, recursos y trazabilidad ampliada'):
-            st.json(historico)
         st.download_button('Descargar simulación validada', texto_json(historico),
                            file_name=f"{historico['run_id']}-ampliada.json", mime='application/json')
+    else:
+        st.caption('Aún no hay un resultado validado de los 12 trayectos en esta sesión.')
 
 
 def mostrar_ml():
     st.subheader('Predicción académica de minutos de retraso')
-    st.info('Datos simulados: entrenamiento y evaluación reales de Ridge frente a DummyRegressor. '
-            'No está validado para vuelos reales y sus predicciones no modifican CP-SAT.')
-    st.caption('1.000 registros, separación por día: 800 para entrenamiento y 200 para prueba. '
-               'No se entrena al abrir o navegar por la aplicación.')
-    if st.button('Entrenar y evaluar ML', key='entrenar_ml'):
+    st.caption('Estime minutos de retraso. La predicción no cambia la planificación de aeronaves.')
+    if st.button('Evaluar predicción de retrasos', key='entrenar_ml'):
         try:
             from academico.ml_retrasos import entrenar_evaluar
             with st.spinner('Entrenando y evaluando sobre días separados...'):
@@ -289,12 +209,51 @@ def mostrar_ml():
     if r:
         st.caption('Resultado del último entrenamiento explícito de esta sesión.')
         a, b = st.columns(2)
-        a.metric('MAE Ridge (min)', f"{r['mae_ridge_minutos']:.3f}")
-        b.metric('MAE referencia (min)', f"{r['mae_dummy_minutos']:.3f}")
+        a.metric('Error medio de predicción (min)', f"{r['mae_ridge_minutos']:.3f}")
+        b.metric('Error medio de referencia (min)', f"{r['mae_dummy_minutos']:.3f}")
         st.dataframe(r['ejemplos_prueba'], hide_index=True, width='stretch')
-        with st.expander('Datos, partición y métricas del experimento'):
-            st.json(r)
         st.download_button('Descargar evaluación ML', texto_json(r), file_name='evaluacion_ml_sintetica.json', mime='application/json')
+
+
+def mostrar_disponibilidad(admision):
+    if admision['admitido']:
+        st.success('Recursos disponibles. Confirme la ejecución para obtener un resultado.')
+    else:
+        mensajes = {
+            'RAM_HOST_MENOR_2_GIB': 'Se requieren al menos 2 GiB de memoria libre.',
+            'RAM_CONTENEDOR_MENOR_2_GIB': 'La memoria disponible del servidor es insuficiente.',
+            'ENSAYO_ACADEMICO_EN_CURSO': 'Hay otra ejecución en curso.',
+            'LIMITE_CONTENEDOR_NO_VERIFICABLE': 'No se pudo verificar la memoria del servidor.',
+            'ESCENARIO_FUERA_DE_ALCANCE': 'El caso original no cumple los controles de integridad.',
+        }
+        st.warning('Optimización deshabilitada. ' + ' '.join(
+            mensajes.get(m, m) for m in admision['motivos']))
+
+
+def mostrar_trayectos(datos):
+    st.subheader('Los 12 trayectos de la jornada')
+    origen = st.selectbox('Aeropuerto de origen', ['Todos', *sorted(datos['aeropuertos'])],
+                          key='origen_ampliado')
+    filas = [v for v in datos['operaciones'] if origen == 'Todos' or v['origen'] == origen]
+    st.dataframe(filas, hide_index=True, width='stretch', column_config={
+        'id_vuelo': 'Trayecto', 'origen': 'Origen', 'destino': 'Destino',
+        'salida_utc': 'Salida (UTC)', 'llegada_utc': 'Llegada (UTC)'})
+    st.caption(f"{len(filas)} de {len(datos['operaciones'])} trayectos visibles. Horarios en UTC.")
+
+
+def mostrar_validacion():
+    st.subheader('Validación técnica · caso original de 2 trayectos')
+    seccion = st.selectbox('Consultar', ['Caso original', 'Ejecutar caso original', 'Consulta histórica'],
+                           key='seccion_validacion')
+    if seccion == 'Consulta histórica':
+        mostrar_resultados()
+    else:
+        datos, sha = cargar_entradas()
+        if seccion == 'Caso original':
+            mostrar_caso(datos, sha)
+        else:
+            mostrar_optimizacion(datos)
+    st.caption('Los parámetros, diagnósticos y comprobaciones de integridad se conservan en las descargas y la documentación del repositorio.')
 
 
 def mostrar_demostrador():
@@ -323,106 +282,34 @@ def mostrar_demostrador():
         unsafe_allow_html=True,
     )
 
+    vista = st.segmented_control('Vista académica',
+        ['Resumen', 'Trayectos', 'Planificación y contingencias', 'Validación técnica', 'Predicción de retrasos'],
+        default='Resumen', key='vista_academica')
     try:
-        datos, sha = cargar_entradas()
-    except (ConsultaError, OSError, ValueError, KeyError, TypeError) as error:
-        st.error('No se pudo cargar el caso sintético: ' + str(error))
-        return
-    vista = st.segmented_control('Vista académica', ['Resumen', 'Caso sintético', 'Optimización', 'Consulta histórica',
-                                                   'Simulación ampliada', 'Predicción de retrasos'],
-                                default='Resumen', key='vista_academica')
-    if vista == 'Caso sintético':
-        mostrar_caso(datos, sha)
-    elif vista == 'Consulta histórica':
-        mostrar_resultados()
-    elif vista == 'Optimización':
-        mostrar_optimizacion(datos)
-    elif vista == 'Simulación ampliada':
-        mostrar_simulacion()
-    elif vista == 'Predicción de retrasos':
-        mostrar_ml()
-    else:
-            
-        st.markdown("### Centro de control operacional")
-        st.caption(
-            "Visión general del escenario académico de planificación aérea."
-        )
-
-        col1, col2, col3 = st.columns(3, gap="medium")
-
-        col1.metric(
-            "✈ Trayectos programados",
-            len(datos["operaciones"])
-        )
-        col2.metric(
-            "◈ Aeronaves regulares",
-            len(datos["flota"]["regulares"])
-        )
-        col3.metric(
-            "◇ Reservas excluidas",
-            len(datos["flota"]["reservas"])
-        )
-
-        st.divider()
-
-        izquierda, derecha = st.columns([3, 2], gap="large")
-
-        with izquierda:
-            st.markdown("#### Inteligencia operacional")
-            st.write(
-                "SkyRisk Lab utiliza optimización matemática mediante "
-                "OR-Tools CP-SAT para evaluar asignaciones de aeronaves "
-                "respetando restricciones operacionales."
-            )
-
-            st.markdown("**Restricciones consideradas**")
-            st.write(
-                "Unicidad de asignación y continuidad física de los dos trayectos, "
-                "con tránsito sintético de 60 minutos. Este caso no valida mantenimiento ni compromisos protegidos."
-            )
-
-            st.info(
-                "El demostrador utiliza datos sintéticos. "
-                "No representa operaciones reales de una aerolínea."
-            )
-
-        with derecha:
-            st.markdown("#### Estado del demostrador")
-
-            admision_resumen = evaluar_admision()
-
-            if admision_resumen["admitido"]:
-                st.success("Motor CP-SAT disponible para ejecución autorizada.")
+        if vista == 'Validación técnica':
+            mostrar_validacion()
+        elif vista == 'Predicción de retrasos':
+            mostrar_ml()
+        else:
+            datos = cargar_simulacion()
+            if vista == 'Trayectos':
+                mostrar_trayectos(datos)
+            elif vista == 'Planificación y contingencias':
+                mostrar_simulacion(datos)
             else:
-                st.warning(
-    "Motor CP-SAT en espera de recursos suficientes. "
-    "Cada nuevo ensayo CP-SAT requiere autorización expresa "
-    "y al menos 2 GiB de memoria libre."
-)
-
-            st.caption(
-                "La optimización requiere confirmación explícita. "
-                "No se presentan resultados inventados."
-            )
-
-        with st.expander("Alcance y evidencia técnica"):
-            st.write(
-                "La auditoría profesional previa fue aceptada con 112 pruebas. "
-                "El caso original obtuvo OPTIMAL en Colab y tiene ejecución pública documentada en README. "
-                "La ampliación se desarrolla por separado; no se declara desplegada."
-            )
-            st.write(
-                "La validación del visor se documenta en "
-                "docs/entrega1/validacion.md."
-            )
-            st.write(
-                "La modalidad ampliada conserva los controles de admisión. Su despliegue y "
-                "la instalación Linux de sus nuevas dependencias requieren verificación independiente."
-            )
-            st.caption(
-                "El demostrador académico no declara terminada "
-                "la plataforma profesional SkyRisk Lab V5.2."
-            )
+                st.subheader('Planificación de 12 trayectos nacionales')
+                st.warning('El demostrador utiliza datos sintéticos. No representa operaciones reales de una aerolínea.')
+                a, b, c = st.columns(3)
+                a.metric('Trayectos programados', len(datos['operaciones']))
+                b.metric('Aeropuertos', len(datos['aeropuertos']))
+                c.metric('Aeronaves activas', len(datos['activas']))
+                st.write('Consulte los trayectos y compare el plan antes y después de la indisponibilidad de una aeronave.')
+                st.caption('Se respeta la continuidad de las rutas y un tránsito mínimo de 60 minutos. Las reservas están excluidas.')
+                mostrar_disponibilidad(evaluar_admision())
+                st.caption('Los trayectos programados son entradas. Los resultados se muestran después de ejecutar y validar el plan.')
+                st.caption('El caso original de dos trayectos y su evidencia histórica están en Validación técnica.')
+    except (ConsultaError, PersistenciaError, OSError, ValueError, KeyError, TypeError) as error:
+        st.error('No se pudo cargar la vista de forma segura: ' + str(error))
 
 
 # Lista explícita: Streamlit ignora el directorio pages/ profesional.

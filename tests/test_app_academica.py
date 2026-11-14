@@ -90,6 +90,15 @@ class AppAcademicaTests(unittest.TestCase):
 
     def cambiar(self, app, vista):
         self.comprobar_recursos()
+        secciones = {'Caso sintético': 'Caso original', 'Optimización': 'Ejecutar caso original',
+                     'Consulta histórica': 'Consulta histórica'}
+        if vista in secciones:
+            app.segmented_control(key='vista_academica').set_value('Validación técnica').run(timeout=15)
+            app.selectbox(key='seccion_validacion').select(secciones[vista]).run(timeout=15)
+            self.assertEqual(len(app.exception), 0, app.exception)
+            return app
+        if vista == 'Simulación ampliada':
+            vista = 'Planificación y contingencias'
         app.segmented_control(key='vista_academica').set_value(vista).run(timeout=15)
         self.assertEqual(len(app.exception), 0, app.exception)
         return app
@@ -99,8 +108,8 @@ class AppAcademicaTests(unittest.TestCase):
              patch('academico.ejecucion.ejecutar_interactivo',
                    side_effect=AssertionError('No ejecutar sin clic')) as ejecutar:
             app = self.abrir()
-            self.assertEqual([m.value for m in app.metric], ['2', '47', '3'])
-            self.assertTrue(any('Cada nuevo ensayo CP-SAT' in w.value for w in app.warning))
+            self.assertEqual([m.value for m in app.metric], ['12', '4', '4'])
+            self.assertTrue(any('2 GiB' in w.value for w in app.warning))
             self.cambiar(app, 'Caso sintético')
             app.selectbox(key='origen_academico').select('MDE').run(timeout=15)
             self.cambiar(app, 'Optimización')
@@ -216,6 +225,40 @@ class AppAcademicaTests(unittest.TestCase):
             self.assertEqual(app.session_state['ml_academico_valido'], resultado)
             self.assertEqual([m.value for m in app.metric], ['3.000', '6.000'])
 
+    def test_trayectos_ampliados_completos_filtros_y_aviso_unico(self):
+        app = self.abrir()
+        aviso = 'El demostrador utiliza datos sintéticos.'
+        self.assertEqual(sum(aviso in w.value for w in app.warning), 1)
+        for vista in ('Trayectos', 'Planificación y contingencias', 'Validación técnica',
+                      'Predicción de retrasos'):
+            self.cambiar(app, vista)
+            self.assertFalse(any(aviso in w.value for w in app.warning))
+            self.assertEqual(len(app.json), 0)
+        self.cambiar(app, 'Trayectos')
+        ids = list(app.dataframe[0].value['id_vuelo'])
+        self.assertEqual(len(ids), 12)
+        self.assertEqual(set(ids), {f'AMP-{i:02d}' for i in range(1, 13)})
+        filtrados = []
+        for origen in ('BOG', 'MDE', 'CLO', 'CTG'):
+            app.selectbox(key='origen_ampliado').select(origen).run(timeout=15)
+            filas = app.dataframe[0].value
+            self.assertTrue(all(filas['origen'] == origen))
+            filtrados.extend(filas['id_vuelo'])
+        self.assertCountEqual(filtrados, ids)
+
+    def test_ampliado_sin_ejecucion_no_presenta_resultados(self):
+        app = self.cambiar(self.abrir(), 'Planificación y contingencias')
+        self.assertEqual(len(app.metric), 0)
+        self.assertTrue(any('Aún no hay un resultado validado' in c.value for c in app.caption))
+
+    def test_carga_ampliada_invalida_no_impide_validacion_original(self):
+        with patch('academico.simulacion.cargar_simulacion', side_effect=e.ConsultaError('entrada inválida')):
+            app = AppTest.from_file(str(APP), default_timeout=15).run()
+            self.assertTrue(any('entrada inválida' in error.value for error in app.error))
+            self.cambiar(app, 'Validación técnica')
+            self.assertEqual(len(app.error), 0)
+            self.assertEqual(len(app.dataframe[0].value), 2)
+
     def test_contingencia_requiere_confirmacion_y_conserva_historico_ante_fallo(self):
         admision = {'admitido': True, 'motivos': []}
         resultado = {'run_id': 'FIXTURE_TEST_NO_SOLVER', 'resultado': {
@@ -231,11 +274,14 @@ class AppAcademicaTests(unittest.TestCase):
             next(b for b in app.button if b.label == 'Planificar y recuperar').click().run(timeout=15)
             self.assertEqual(ejecutar.call_count, 1)
             self.assertEqual(app.session_state['simulacion_ampliada_valida'], resultado)
+            app.selectbox(key='afectada_ampliada').select('HK-003')
+            self.assertEqual(ejecutar.call_count, 1)
         with patch('academico.ejecucion.evaluar_admision', return_value=admision), \
              patch('academico.ejecucion.ejecutar_simulacion', side_effect=EjecucionError('fallo simulado')):
             next(b for b in app.button if b.label == 'Planificar y recuperar').click().run(timeout=15)
             self.assertEqual(app.session_state['simulacion_ampliada_valida'], resultado)
             self.assertTrue(any('fallo simulado' in error.value for error in app.error))
+            self.assertTrue(any('otra aeronave' in i.value for i in app.info))
 
 
 if __name__ == '__main__':

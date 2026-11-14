@@ -500,13 +500,40 @@ El proyecto aborda los componentes solicitados en la entrega:
 
 **SkyRisk Lab — Inteligencia operacional para decisiones aeronáuticas más seguras, eficientes y responsables.**
 
+## Presentación académica — 14/11/2026
+
+El escenario principal muestra 12 trayectos, cuatro aeropuertos y cuatro aeronaves
+activas. Navegación: Resumen, Trayectos, Planificación y contingencias, Validación
+técnica y Predicción de retrasos. El resumen contiene el único aviso general de
+datos sintéticos; las otras vistas conservan estados operativos y errores.
+
+Validación técnica reúne el caso original de dos trayectos, su ejecución explícita
+y la consulta histórica. Sus entradas, resultados históricos y pruebas del motor
+se conservan. No se modifica CP-SAT ni Ridge.
+
+Los JSON, parámetros del solver, diagnósticos y hashes se consultan en las descargas
+y en los módulos y documentos técnicos del repositorio. La interfaz conserva las
+tablas de asignaciones, comparación y pendientes. Cada resultado de sesión conserva
+su aeronave afectada; una selección distinta requiere una nueva ejecución.
+
+La admisión común comprueba recursos y la integridad del caso original; sus campos
+de perfil ORIGINAL describen ese control, no el modelo ampliado. El motor ampliado
+mantiene el perfil AMPLIADO_V2, cuatro trabajadores y dos resoluciones de hasta
+15 segundos cada una. Se conservan supervisión, exclusión entre ejecuciones,
+autorización por formulario, validación independiente y recuperación por hashes.
+
+La navegación no ejecuta optimización ni entrenamiento automáticamente. Un estado
+de recursos disponibles no acredita resultados: estos se muestran solo tras una
+ejecución validada. Véase `docs/entrega1/validacion.md` para las comprobaciones de
+esta revisión. No se ha publicado ni desplegado este ajuste.
+
 ## Ampliación académica v2 en desarrollo — 13/11/2026
 
 Esta rama conserva el caso original, el inventario de 47 regulares y tres
 reservas, y los bytes de la evidencia Colab. Esta revisión incorpora la ampliación.
 No modifica SQLite ni módulos profesionales.
 
-La vista **Simulación ampliada** presenta 12 vuelos nacionales entre BOG, MDE,
+Las vistas **Trayectos** y **Planificación y contingencias** presentan 12 vuelos nacionales entre BOG, MDE,
 CLO y CTG. Solo cuatro aeronaves están activas: HK-001 y HK-002 en BOG, HK-003
 en CLO y HK-004 en CTG, con disponibilidad explícita. Las demás aeronaves del
 inventario no se habilitan automáticamente. No hay reposicionamiento, cambios

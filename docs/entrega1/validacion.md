@@ -1,5 +1,89 @@
 # Validación del demostrador académico
 
+## Ajuste de presentación local — 14/11/2026
+
+El resumen usa el escenario ampliado: 12 trayectos, cuatro aeropuertos y cuatro
+aeronaves activas. El caso original y la consulta histórica se acceden desde
+Validación técnica. Se conserva un único aviso general de datos sintéticos en
+Resumen; se retiran los bloques JSON de pantalla y se conservan las descargas.
+Los registros históricos que siguen a esta sección permanecen como evidencia de
+sus respectivas revisiones, sin atribuirles una ejecución nueva.
+
+Comando ejecutado desde el entorno virtual del proyecto:
+
+```powershell
+.venv/Scripts/python.exe -m unittest discover -s tests -v
+```
+
+Resultado final: **98 pruebas descubiertas; 92 aprobadas, seis omitidas, cero
+fallos y cero errores**, en 8,662 segundos. Las seis omitidas corresponden a
+`SolverAmpliadoRealTests`, incluido el caso original: admisión bloqueada por
+`RAM_HOST_MENOR_2_GIB`. OR-Tools está instalado. No se ha ejecutado una nueva
+optimización real ni se han presentado resultados de fixtures como resultados
+del solver. La suite se ejecutó fuera del aislamiento tras encontrar una
+restricción de permisos en los temporales de Windows.
+
+AppTest: 14 pruebas aprobadas, 3,871 segundos, pico RSS muestreado de
+152.068.096 bytes, sin ejecutar CP-SAT. Se verifican:
+
+- Resumen de 12 trayectos y acceso secundario al caso original.
+- AMP-01 a AMP-12 exactamente una vez; los cuatro filtros de origen cubren el
+  conjunto completo sin duplicaciones ni omisiones.
+- Aviso general único y ausencia de JSON en las vistas principales.
+- Navegación sin optimización ni entrenamiento automáticos.
+- Botones bloqueados por admisión y confirmación obligatoria antes de ejecutar.
+- Conservación del último resultado válido ante fallos, con identificación de
+  la aeronave del histórico cuando difiere de la nueva solicitud.
+- Acceso al caso original aunque falle la carga de la entrada ampliada.
+- Integridad histórica y consulta sin modificar los archivos de la evidencia.
+
+Ridge se entrenó y evaluó realmente mediante su prueba existente: error medio
+absoluto de 3,0628339081 minutos frente a 6,2101520217 de la referencia. El modelo,
+los datos y las pruebas matemáticas originales permanecen sin cambios.
+
+Los parámetros técnicos retirados de pantalla siguen en `academico/simulacion.py`,
+`academico/ejecucion.py`, las descargas y las secciones técnicas del README. No se
+modifican controles de memoria, supervisión, exclusión, autorización ni integridad.
+No se publica ni despliega esta revisión. Quedan pendientes una nueva ejecución
+CP-SAT con recursos suficientes y la verificación del entorno público ampliado.
+
+## Revisión previa a publicación — 14/11/2026
+
+Se repitió la suite completa antes de preparar el commit: **98 pruebas en
+14,421 segundos; 92 aprobadas, seis omitidas, cero fallos y cero errores**.
+AppTest aprobó sus 14 casos en 5,863 segundos; pico RSS muestreado de 149.090.304
+bytes. Ridge volvió a obtener los mismos errores medios documentados arriba.
+
+Las seis pruebas omitidas pertenecen a `SolverAmpliadoRealTests`, en
+`tests/test_ampliacion_academica.py`. Todas se omiten por
+`RAM_HOST_MENOR_2_GIB`; no acreditan una ejecución nueva del solver:
+
+| Prueba | Comprobación pendiente en este equipo |
+| --- | --- |
+| `test_12_atendidos_y_sustitucion_observable` | Cobertura y sustitución al bloquear HK-001 |
+| `test_falta_aeronave_en_clo_produce_pendiente` | Pendiente AMP-05 al bloquear HK-003 |
+| `test_optimo_contra_enumeracion_independiente` | Optimalidad frente a enumeración |
+| `test_original_dos_trayectos_real_se_conserva` | Regresión real del caso original |
+| `test_supervisor_productor_recuperador_v2_completo` | Ejecución ampliada supervisada completa |
+| `test_todas_bloqueadas_solucion_vacia_optima` | Solución vacía con todas las aeronaves bloqueadas |
+
+El diff revisado se limita a `app_academica.py`, `tests/test_app_academica.py`,
+`README.md`, `docs/entrega1/presentacion.md` y este documento. La comparación con
+la base Git verifica sin cambios de contenido los 17 archivos versionados de
+`academico/`, `planificacion_comercial/`, `demo/`, `docs/evidencias/` y las pruebas
+técnicas de escenarios, ejecución, ampliación y ML. La comparación normaliza
+exclusivamente CRLF/LF de Git en Windows. La evidencia pública además supera
+su validación de integridad existente; SHA-256 actual:
+`7973ec39ac70e11f6cb8d778f4029e82f2121d731afdda58d536e8f8f6e7836c`.
+
+Tras `git fetch origin`, la base local y `origin/main` coinciden en
+`47ee953411067238bec9161e0757d00c075fef55`, sin divergencia. Se prepara una rama
+local independiente; al mantenerse esa referencia remota, la integración admite
+avance directo sin sobrescribir commits. Se debe repetir `fetch` antes de
+integrar si el remoto cambia. No se autoriza push ni despliegue con esta revisión.
+
+## Registro de preparación anterior
+
 Estado vigente de preparación: seis pruebas CP-SAT aprobadas en Colab y evidencia
 inspeccionada; Ridge evaluado localmente. La interfaz pública ampliada y el botón
 ML real siguen pendientes. Los registros preparatorios anteriores se conservan

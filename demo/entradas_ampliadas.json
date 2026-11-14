@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "id_escenario": "AMPLIADO-NACIONAL-12-V1",
+  "tipo_datos": "SINTETICO",
+  "jornada": "2026-11-14",
+  "aeropuertos": ["BOG", "MDE", "CLO", "CTG"],
+  "activas": {
+    "HK-001": {"ubicacion": "BOG", "disponible_desde": "2026-11-14T00:00:00+00:00"},
+    "HK-002": {"ubicacion": "BOG", "disponible_desde": "2026-11-14T00:00:00+00:00"},
+    "HK-003": {"ubicacion": "CLO", "disponible_desde": "2026-11-14T00:00:00+00:00"},
+    "HK-004": {"ubicacion": "CTG", "disponible_desde": "2026-11-14T00:00:00+00:00"}
+  },
+  "operaciones": [
+    {"id_vuelo": "AMP-01", "origen": "BOG", "destino": "MDE", "salida_utc": "2026-11-14T08:00:00+00:00", "llegada_utc": "2026-11-14T09:00:00+00:00"},
+    {"id_vuelo": "AMP-02", "origen": "MDE", "destino": "BOG", "salida_utc": "2026-11-14T10:00:00+00:00", "llegada_utc": "2026-11-14T11:00:00+00:00"},
+    {"id_vuelo": "AMP-03", "origen": "BOG", "destino": "CLO", "salida_utc": "2026-11-14T12:00:00+00:00", "llegada_utc": "2026-11-14T13:00:00+00:00"},
+    {"id_vuelo": "AMP-04", "origen": "CLO", "destino": "BOG", "salida_utc": "2026-11-14T14:00:00+00:00", "llegada_utc": "2026-11-14T15:00:00+00:00"},
+    {"id_vuelo": "AMP-05", "origen": "CLO", "destino": "BOG", "salida_utc": "2026-11-14T08:00:00+00:00", "llegada_utc": "2026-11-14T09:00:00+00:00"},
+    {"id_vuelo": "AMP-06", "origen": "BOG", "destino": "CTG", "salida_utc": "2026-11-14T10:00:00+00:00", "llegada_utc": "2026-11-14T11:00:00+00:00"},
+    {"id_vuelo": "AMP-07", "origen": "CTG", "destino": "BOG", "salida_utc": "2026-11-14T12:00:00+00:00", "llegada_utc": "2026-11-14T13:00:00+00:00"},
+    {"id_vuelo": "AMP-08", "origen": "BOG", "destino": "CLO", "salida_utc": "2026-11-14T14:00:00+00:00", "llegada_utc": "2026-11-14T15:00:00+00:00"},
+    {"id_vuelo": "AMP-09", "origen": "CTG", "destino": "BOG", "salida_utc": "2026-11-14T08:00:00+00:00", "llegada_utc": "2026-11-14T09:00:00+00:00"},
+    {"id_vuelo": "AMP-10", "origen": "BOG", "destino": "MDE", "salida_utc": "2026-11-14T10:00:00+00:00", "llegada_utc": "2026-11-14T11:00:00+00:00"},
+    {"id_vuelo": "AMP-11", "origen": "MDE", "destino": "BOG", "salida_utc": "2026-11-14T12:00:00+00:00", "llegada_utc": "2026-11-14T13:00:00+00:00"},
+    {"id_vuelo": "AMP-12", "origen": "BOG", "destino": "CTG", "salida_utc": "2026-11-14T14:00:00+00:00", "llegada_utc": "2026-11-14T15:00:00+00:00"}
+  ]
+}

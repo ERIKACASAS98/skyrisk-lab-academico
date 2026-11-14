@@ -1,5 +1,10 @@
 
 # SkyRisk Lab ✈️
+
+> Rama de desarrollo `desarrollo/ampliacion-academica`: la ampliación v2 y ML
+> son cambios locales, sin publicar. La demostración pública enlazada más abajo
+> corresponde a la versión original de dos trayectos. Estado y pruebas de la
+> ampliación al final de este documento.
 ### Inteligencia operacional aplicada a la aviación
 
 SkyRisk Lab es un proyecto de inteligencia operacional aeronáutica que busca integrar inteligencia artificial, analítica de datos y optimización matemática para apoyar la planificación y la toma de decisiones en las operaciones aéreas.
@@ -24,7 +29,7 @@ Como primera etapa, desarrollamos un demostrador académico para el curso **Intr
 
 El demostrador permite optimizar la asignación de aeronaves para un escenario sintético de dos trayectos nacionales, considerando 47 aeronaves regulares y tres de reserva excluidas de la programación rutinaria.
 
-En esta implementación inicial, la función objetivo maximiza los trayectos asignados, respetando las restricciones de disponibilidad, continuidad física y tránsito mínimo.
+En esta implementación inicial, la función objetivo maximiza los trayectos asignados, con unicidad y continuidad de la cadena fija de dos vuelos. La ubicación y disponibilidad por aeronave se modelan explícitamente en la ampliación v2.
 
 Este objetivo matemático específico no debe confundirse con la visión integral de SkyRisk Lab, que contempla múltiples criterios de optimización.
 
@@ -494,3 +499,148 @@ El proyecto aborda los componentes solicitados en la entrega:
 ---
 
 **SkyRisk Lab — Inteligencia operacional para decisiones aeronáuticas más seguras, eficientes y responsables.**
+
+## Ampliación académica v2 en desarrollo — 13/11/2026
+
+Esta rama conserva el caso original, el inventario de 47 regulares y tres
+reservas, y los bytes de la evidencia Colab. No se ha publicado esta ampliación.
+No modifica SQLite ni módulos profesionales.
+
+La vista **Simulación ampliada** presenta 12 vuelos nacionales entre BOG, MDE,
+CLO y CTG. Solo cuatro aeronaves están activas: HK-001 y HK-002 en BOG, HK-003
+en CLO y HK-004 en CTG, con disponibilidad explícita. Las demás aeronaves del
+inventario no se habilitan automáticamente. No hay reposicionamiento, cambios
+de horarios, mantenimiento detallado ni tripulaciones.
+
+El modelo CP-SAT v2 construye caminos temporales por aeronave, con inicio factible,
+conservación de flujo y conexiones aeropuerto/horario con tránsito mínimo de
+60 minutos. Admite planes parciales y vacíos; cada vuelo queda asignado o pendiente.
+El objetivo prioriza cobertura, luego conservar asignaciones de la planificación
+base y finalmente una preferencia de matrícula. No se interpreta una solución
+FEASIBLE como prueba de optimalidad ni un pendiente como prueba de imposibilidad.
+
+Se puede seleccionar una aeronave activa y bloquearla toda la jornada. Una acción
+explícita calcula la base y la recuperación, valida ambas y muestra afectados,
+sustitutas reales, cambios y pendientes. Las pruebas reales de Colab verificaron
+12 vuelos atendidos antes y después de bloquear HK-001, con un cambio observable,
+y AMP-05 pendiente al bloquear HK-003 en CLO. El informe conserva resultados de
+pruebas, no todas las matrices de asignación: no se inventan matrículas sustitutas
+ni tiempos internos del solver ausentes de la evidencia. Los validadores también
+se comprobaron con fixtures explícitas sin solver.
+
+La solicitud completa se copia al temporal y se guarda con inventario, ubicaciones,
+incidente y hash canónico. El recuperador separado valida manifiestos, planes,
+comparación y correspondencia exacta con la solicitud. El resultado de sesión se
+puede descargar; el almacén temporal se elimina tras la salida de los procesos.
+No se incorpora automáticamente al catálogo histórico ni es persistencia durable.
+
+Se mantienen 2 GiB de admisión CP-SAT, 512/128 MiB de RSS productor/recuperador y
+los presupuestos de 60/15/90 s. Cada uno de los dos planes v2 tiene un presupuesto
+de solver de 15 s, dentro de los 30 s originales totales. Estos presupuestos son
+supervisados: la cancelación sigue siendo cooperativa, sin terminación forzada.
+
+### Predicción de retrasos: entrenamiento real, datos simulados
+
+La vista **Predicción de retrasos** solo entrena por botón. Genera 1.000 registros
+con semilla 20261114, en 100 días sintéticos. Predictores: origen, destino, hora
+programada, congestión, viento y lluvia previstos. El objetivo se genera mediante
+una fórmula explícita con ruido; no procede de vuelos reales ni de CP-SAT.
+
+GroupShuffleSplit separa días completos: 800 registros de entrenamiento y 200 de
+prueba. StandardScaler y OneHotEncoder se ajustan dentro de un Pipeline solo con
+entrenamiento. Se compara Ridge(alpha=1, solver=lsqr) con DummyRegressor(media).
+La predicción mostrada se limita inferiormente a cero. No se realiza selección de
+hiperparámetros usando la prueba ni se conectan predicciones a las restricciones.
+
+Resultados reales del experimento local:
+
+| Medida | Valor |
+| --- | --- |
+| MAE Ridge | 3,0628339081 minutos |
+| MAE referencia Dummy | 6,2101520217 minutos |
+| Datos SHA-256 | 91860488e459ab7ab9273ee39761152569a2ca3b27476a556122202103cef7bd |
+| Registros entrenamiento / prueba | 800 / 200 |
+
+Estos resultados evalúan aprendizaje del generador sintético, no capacidad de
+predecir retrasos reales. ML utiliza un hilo de cómputo y comparte exclusión con
+CP-SAT. Exige 256 MiB disponibles antes de comenzar; esto no cambia el requisito
+de 2 GiB del optimizador. No guarda ni carga modelos pickle de fuentes externas.
+
+### Verificación y pendiente de aceptación
+
+Se comprobaron 81 pruebas únicas locales sin CP-SAT y las seis pruebas reales
+CP-SAT aprobaron en Google Colab/Linux/Python 3.13.18. El informe y su log fueron
+inspeccionados, con seis registros APROBADA, sin fallos, errores ni omisiones,
+y con snapshot verificado al finalizar. No se redujo la admisión de 2 GiB.
+Las 60 pruebas originales están incluidas en los 81 casos locales; no se suman
+repeticiones ni se presenta todo como una única suite ejecutada en Cloud.
+La evaluación Ridge es local; el entrenamiento real desde la interfaz pública
+ampliada todavía requiere validación. Ver `docs/entrega1/validacion.md`.
+
+Para repetir solo las comprobaciones sin solver:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ampliacion_academica.py -k AmpliacionAcademicaTests -q
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ml_academico.py -q
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_app_academica.py -q
+```
+
+Con al menos 2 GiB libres y admisión válida, ejecutar los seis ensayos de forma
+secuencial; si la admisión falla, unittest los marca omitidos, no aprobados:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ampliacion_academica.py -k SolverAmpliadoRealTests -v
+```
+
+Para ejecutar la suite completa:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest discover -s tests -p 'test_*academic*.py' -v
+.venv/Scripts/python.exe -B -m pip check
+.venv/Scripts/python.exe -B -m streamlit run app_academica.py
+```
+
+Arrancar el servidor no ejecuta entrenamiento ni CP-SAT. AppTest comprobó la
+navegación y acciones, sin navegador ni servidor público. La validación Colab
+acredita CP-SAT y sus dependencias mínimas; no sustituye la instalación Linux del
+stack completo de Streamlit/Scikit-learn ni el recorrido público real del botón ML.
+Faltan esas comprobaciones y autorización para publicar. La política actual admite
+37 rutas exactas, incluido el cuaderno externo R2; no añade artefactos ni resultados
+automáticamente. No hacer commit, push, merge o despliegue sin autorización.
+
+## Reproducción de las seis pruebas aprobadas en Colab
+
+La guía está en [docs/entrega1/colab.md](docs/entrega1/colab.md). Para reproducir
+el entorno use el [cuaderno externo R2](docs/entrega1/validacion_colab_entorno_r2.ipynb),
+que evita ensurepip usando venv --without-pip y el pip principal con --python.
+El [cuaderno original](docs/entrega1/validacion_colab.ipynb) y los 36 archivos de
+su snapshot permanecen intactos dentro del ZIP original. Se conservan sus hashes.
+No basta clonar el commit base para obtener aquel árbol de trabajo sin commit.
+R2 se incluye ahora en la política del repositorio, no en el manifiesto original.
+
+El venv de Colab instala solo OR-Tools 9.15.6755, pandas 3.0.0 y psutil 7.2.2,
+con sus transitivas registradas. No necesita Streamlit, ML ni GPU. Un preflight
+aplica la admisión original de 2 GiB y cgroup; cada prueba vuelve a comprobarla.
+El runner ejecuta exclusivamente los seis métodos existentes, secuencialmente,
+y no considera una omisión como aprobación. Los tests directos mantienen sus
+controles actuales: el procedimiento no añade una contención dura ni promete
+plazos estrictos donde la cancelación es cooperativa.
+
+El resultado real se conserva en evidencia_skyrisk_cpsat_colab.zip, con
+resultado.json, unittest.log y MANIFIESTO_COLAB.json. Su huella SHA-256 es:
+`24b8f3547eb8e048e7b13acd9f496964360b29f9f04a7010daa9b63dc7a63171`.
+El manifiesto coincide byte a byte con el del snapshot original. La ejecución
+registró 2026-11-14T02:25:01.380789+00:00 (13/11/2026, 21:25:01, America/Bogota).
+El archivo de evidencia se mantiene en custodia local separada; no se añade el
+ZIP de Descargas ni se exponen rutas personales en el paquete público.
+
+El snapshot original mantiene SHA-256
+`34b5bffd805aaff0ef04b22d27b00aaf4ecd2a979d067e6ec671faa880c0bb13`
+y snapshot_id
+`aca0c168268a2db1bb0c9b52fbd2735cf295b5a408a536bb27c64f6a6a48e456`.
+No regenerarlo ni actualizar silenciosamente su manifiesto. artifacts/ permanece
+excluido de Git. Publicar documentación nueva o R2 no convierte el commit nuevo
+en aquel snapshot: son revisiones externas y trazables, sin cambiar el optimizador.
+La instalación y ejecución completa del cuaderno externo R2 no se acredita solo
+por el informe del snapshot: debe distinguirse de la corrección manual del entorno
+con la que se obtuvieron las seis aprobaciones.

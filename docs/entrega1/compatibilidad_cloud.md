@@ -101,3 +101,23 @@ verificable no es apta para habilitar esta optimización cooperativa. Conservar 
 consulta histórica como respaldo y no reducir la admisión de 2 GiB. La exclusión
 no cubre réplicas con temporales independientes. Los temporales y la sesión no
 son almacenamiento durable; descargar el resultado y registrar la evidencia.
+
+## Dependencias de la ampliación local
+
+Se añade scikit-learn==1.9.1 a requirements.txt, conservando las cuatro versiones
+directas originales. Se instaló únicamente en .venv mediante wheels CPython 3.14
+Windows; no se instaló software global. Dependencias añadidas por el resolvedor:
+SciPy 1.18.1, joblib 1.6.0, threadpoolctl 3.8.0 y cloudpickle 3.1.2. El entorno
+local usa NumPy 2.5.4. El entrenamiento real y pip check funcionan en este entorno.
+Esto no es un lock completo ni prueba una instalación limpia en Linux.
+
+La aplicación original publicada conserva su evidencia. La rama ampliada no se
+ha enviado ni desplegado. Antes de promoverla, resolver requirements en un entorno
+Linux dedicado, ejecutar pip check y las comprobaciones sin solver, y después
+verificar CP-SAT solo si la admisión confirma 2 GiB libres efectivos. No se modifica
+main ni se reemplaza la app pública mientras este cierre esté pendiente.
+
+El botón ML usa 1.000 filas y limita los pools de cómputo a un hilo; comparte
+exclusión con CP-SAT. Su mínimo propio de 256 MiB no modifica la admisión de 2 GiB
+del optimizador. La primera importación de Scikit-learn puede ser lenta y su coste
+se incluye en wall_s. Abrir la app y navegar no importa ni entrena Scikit-learn.

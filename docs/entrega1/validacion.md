@@ -1,5 +1,10 @@
 # Validación del demostrador académico
 
+Estado vigente de preparación: seis pruebas CP-SAT aprobadas en Colab y evidencia
+inspeccionada; Ridge evaluado localmente. La interfaz pública ampliada y el botón
+ML real siguen pendientes. Los registros preparatorios anteriores se conservan
+como históricos y se contextualizan en la sección final de este documento.
+
 Fecha de preparación local: 12 de noviembre de 2026, America/Bogota.
 Entorno local: Windows, Python 3.14.3 y Streamlit 1.66.1.
 
@@ -263,3 +268,182 @@ no certifica ausencia absoluta de secretos ni revisa todo el historial Git.
 `git diff --check` final aprobó. El índice no tiene cambios preparados por esta
 sesión; sus 14 diferencias frente al trabajo incluyen la edición preexistente de
 investigacion.md, que se conservó sin modificar durante este cierre.
+
+## Ampliación v2 — resultados locales del 13/11/2026
+
+Rama: desarrollo/ampliacion-academica, creada desde el estado académico 6421558.
+Main local se conserva en a557b4e6dcc3128230017f201653ced8634c4338.
+La ampliación no se ha publicado ni desplegado. Se mantienen los registros y bytes
+de la evidencia histórica original. Entorno: Windows, Python 3.14.3,
+Streamlit 1.66.1, OR-Tools 9.15.6755, pandas 3.0.0 y Scikit-learn 1.9.1.
+
+La primera suite ampliada ejecutó 85 casos en 56,941 s: 79 correctos y seis
+omitidos por RAM inferior a 2 GiB. La pasada inicial del nuevo grupo dentro del
+sandbox encontró permisos insuficientes de temporales; se verificó con acceso
+normal autorizado. No se interpretan errores de permisos ni omisiones como éxitos.
+
+Tras reforzar la exclusión ML, la política JSON y la correlación de recuperación,
+se repitieron únicamente los grupos afectados:
+
+| Grupo | Casos comprobados sin CP-SAT | Tiempo de la última pasada |
+| --- | ---: | ---: |
+| Escenarios originales | 24 | Incluidos en la suite inicial de 56,941 s |
+| Ejecutor original | 17 | 1,535 s |
+| Interfaz, incluidas tres pruebas nuevas | 11 | 2,794 s |
+| Publicación, incluida nueva entrada v2 | 12 | 0,336 s |
+| Validadores y recuperación ampliada | 13 | 0,613 s |
+| ML con entrenamiento real pequeño | 4 | 2,063 s |
+| Total de casos únicos comprobados | 81 | No sumar repeticiones |
+
+Durante la preparación local quedaron seis pruebas CP-SAT sin ejecutar por RAM.
+Las seis aprobaron posteriormente en Colab; la evidencia inspeccionada figura al
+final de este documento. Los casos que entonces quedaron pendientes eran:
+
+1. Cobertura de 12 vuelos y cambio observable al bloquear HK-001.
+2. Pendiente AMP-05 al bloquear HK-003 en CLO.
+3. Plan vacío óptimo con todas las activas bloqueadas.
+4. Óptimo de tres vuelos frente a enumeración independiente.
+5. Productor y recuperador v2 completos mediante el supervisor real.
+6. Ejecución real del caso original de dos trayectos tras la ampliación.
+
+Se comprobó la admisión: aproximadamente 0,4–1,0 GiB disponibles durante el
+trabajo, por debajo del mínimo. Ejecutar secuencialmente no elimina ese requisito.
+No se forzó CP-SAT ni se simularon sus métricas. La evidencia OPTIMAL previa del
+original no valida el nuevo solver ni sustituye estas seis pruebas.
+
+La recuperación v2 sí se ejecutó realmente sobre una fixture marcada
+FIXTURE_TEST_NO_SOLVER, en otro proceso. Se verificó su hash canónico y la
+solicitud completa; una contingencia distinta y una comparación falsificada se
+rechazan. Las fixtures no son resultados de optimización y no se publican como
+asignaciones reales. Los validadores probaron frontera 59/60 minutos, ubicación,
+disponibilidad, solapamientos, aeronaves bloqueadas/inactivas y planes vacíos.
+
+Entrenamiento real ML: 1.000 registros, semilla 20261114, 100 días; 800 registros
+para entrenamiento y 200 para prueba, sin días compartidos. Ridge MAE:
+3,062833908100629 min; Dummy MAE: 6,210152021660345 min.
+Datos SHA-256: 91860488e459ab7ab9273ee39761152569a2ca3b27476a556122202103cef7bd.
+La primera importación fría y entrenamiento tardaron 49,217762 s; otra pasada
+midió 2,012709 s y RSS final de 174.219.264 bytes. El RSS final no es un pico ni
+una garantía de memoria. Las métricas reproducidas coinciden; evalúan el simulador,
+no vuelos reales. No se conectaron predicciones con restricciones del solver.
+
+Última AppTest: 2,793784 s y pico RSS muestreado 152.551.424 bytes,
+cp_sat_ejecutado=false. Se probó navegación por las seis vistas sin entrenamiento,
+botones explícitos, confirmación de contingencia y conservación de históricos
+ante fallo. No equivale a un recorrido del navegador ni a despliegue Linux.
+
+Las instrucciones de reproducción están en README. Posteriormente se recibieron
+y verificaron las seis aprobaciones Colab, detalladas abajo. Sigue pendiente
+verificar el stack completo Streamlit/Scikit-learn en Linux y la interfaz pública
+ampliada, además de revisión y autorización antes de publicar.
+
+Comprobaciones finales: auditoría del paquete de trabajo con 31 archivos,
+sin faltantes ni hallazgos y .gitignore coincidente; AST de los Python permitidos
+válido; pip check sin dependencias incompatibles; git diff --check correcto.
+El JSON de entradas original y la huella de la evidencia Colab permanecen intactos.
+No hay diferencias en módulos profesionales ni cambios en main. Los archivos
+de la ampliación quedan sin commit ni preparación del índice para revisión.
+
+## Preparación de validación Colab — sin ejecutar CP-SAT
+
+Se añadieron preparar_colab.py, validar_cpsat_colab.py, validacion_colab.ipynb,
+colab.md y test_colab_academico.py. En esa preparación se permitían 36 archivos;
+la política de publicación actual admite 37, al incorporar explícitamente R2.
+El paquete copia los bytes del trabajo sin commit y registra rama, revisión base,
+SHA-256 por archivo y snapshot_id. No se cambia el optimizador ni los seis métodos
+SolverAmpliadoRealTests; se mantienen todas sus comprobaciones.
+
+Comprobaciones ligeras ejecutadas:
+
+- Siete pruebas de preparación: OK, 1,025 s. Se verificaron copia exacta,
+  reproducibilidad binaria, hashes, rechazo de traversal y cambios, preflight
+  real desde un snapshot extraído sin ejecutar tests, bloqueo por RAM, rechazo
+  de aprobaciones con skips y sintaxis de todas las celdas sin salidas guardadas.
+- Doce pruebas de publicación afectadas por la lista: OK, 0,253 s.
+- Las simulaciones de resultados de unittest pertenecen exclusivamente a pruebas
+  de infraestructura y están marcadas FIXTURE_TEST_NO_SOLVER; no constituyen
+  una ejecución ni aprobación de los seis tests pendientes.
+
+El preflight de la copia extraída se invocó sin --ejecutar. Sus importaciones y
+escritura de informe funcionan localmente. El cuaderno solo se compiló, sin
+subirlo o ejecutarlo en Colab. No se instaló un entorno Linux en esta sesión.
+En esa fase las seis pruebas reales aún estaban pendientes. Posteriormente se
+recibió e inspeccionó el informe SEIS_APROBADAS, según el registro final siguiente.
+No se suman estas siete pruebas de preparación a las seis aprobaciones CP-SAT. El informe identifica versiones del runtime; las transitivas no están
+bloqueadas por un lock y se conservan mediante pip freeze en la evidencia.
+
+Se conservan sin cambios las entradas originales y la evidencia Colab histórica.
+El transporte excluye .git, .venv, SQLite y datos operacionales. No se realizó
+commit, push, merge, publicación ni despliegue. Seguir la guía colab.md para cargar
+el ZIP, pegar la huella externa, crear el venv y descargar evidencia real.
+
+
+## Estado consolidado para publicación — evidencia Colab inspeccionada
+
+Se inspeccionó evidencia_skyrisk_cpsat_colab.zip (4.116 bytes), sin modificarlo.
+SHA-256 del archivo recibido:
+`24b8f3547eb8e048e7b13acd9f496964360b29f9f04a7010daa9b63dc7a63171`.
+Contiene resultado.json, unittest.log y MANIFIESTO_COLAB.json. Se comprobó:
+
+- Estado SEIS_APROBADAS; seis_aprobadas=true y cp_sat_ejecutado=true.
+- Seis pruebas con un caso ejecutado cada una, cero fallos, errores y omisiones.
+- Log con los seis nombres correspondientes y seis cierres OK, sin FAILED/skips.
+- pendientes vacío y snapshot_verificado_al_final=true.
+- Manifiesto recibido idéntico byte a byte al manifiesto del ZIP original.
+- snapshot_id recalculado a partir del manifiesto, coincidente con el informe.
+- Admisión inicial y antes de cada prueba aprobadas. La inicial registró
+  12.317.995.008 bytes disponibles, con cgroup SIN_LIMITE_FINITO. No se redujo
+  el requisito de 2 GiB ni se desactivaron las comprobaciones operacionales.
+
+Entorno registrado: Linux, Python 3.13.18, OR-Tools 9.15.6755, pandas 3.0.0,
+psutil 7.2.2, NumPy 2.5.4 y protobuf 6.33.6. La fecha del informe es
+2026-11-14T02:25:01.380789+00:00, equivalente al 13/11/2026 a las 21:25:01
+(America/Bogota). Rama declarada: desarrollo/ampliacion-academica; commit base
+642155818a82a2973ecd2afd1dbe1500e6486d3b, que no identifica por sí solo los
+cambios entonces sin commit. La identidad exacta del código ensayado es:
+
+`aca0c168268a2db1bb0c9b52fbd2735cf295b5a408a536bb27c64f6a6a48e456`.
+
+| Prueba real | Resultado | Duración de la prueba (s) |
+| --- | --- | ---: |
+| test_12_atendidos_y_sustitucion_observable | APROBADA | 0,566087 |
+| test_falta_aeronave_en_clo_produce_pendiente | APROBADA | 0,022358 |
+| test_todas_bloqueadas_solucion_vacia_optima | APROBADA | 0,011693 |
+| test_optimo_contra_enumeracion_independiente | APROBADA | 0,005012 |
+| test_supervisor_productor_recuperador_v2_completo | APROBADA | 0,830416 |
+| test_original_dos_trayectos_real_se_conserva | APROBADA | 0,828308 |
+
+Los tiempos son duraciones de pruebas, no tiempos internos del solver ni una
+medición nueva de rendimiento. No se volvieron a ejecutar las seis pruebas en
+esta preparación. El informe no contiene todas las matrices de asignación ni el
+almacén efímero; no se inventan esos resultados. El ZIP recibido queda en custodia
+local separada, sin copiarlo al paquete público o alterar su contenido.
+
+### Alcance separado de la evidencia
+
+| Componente | Estado verificable |
+| --- | --- |
+| Modelo CP-SAT ampliado y contingencias | Seis pruebas reales aprobadas en Colab; informe, log y manifiesto inspeccionados |
+| Caso original de dos trayectos | Prueba real de regresión incluida en esas seis; evidencia histórica conservada |
+| Ridge sobre 1.000 filas sintéticas | Entrenamiento/evaluación locales reales: MAE 3,0628339081 min frente a Dummy 6,2101520217 min |
+| Navegación y botón ML en AppTest | Pruebas locales aprobadas; el entrenamiento se sustituye por una respuesta simulada en la prueba de interfaz |
+| Botón ML con entrenamiento real en la interfaz pública ampliada | Pendiente de verificación; no lo acredita el entrenamiento local ni Colab CP-SAT |
+| Stack completo de dependencias web/ML en Linux de Community Cloud | Pendiente; el entorno Colab verificado instaló solo el subconjunto CP-SAT |
+| Cuaderno externo R2 | Corrección de entorno comprobada localmente; no atribuirle una ejecución completa nueva por el informe original |
+
+### Integridad y preparación de archivos
+
+R2 se incorpora de forma explícita a PERMITIDOS y .gitignore: 37 rutas académicas
+revisables. No se modifica el cuaderno original, el snapshot, su manifiesto ni el
+ZIP. Incluir R2 en el repositorio no lo incorpora retroactivamente a aquel snapshot.
+La guía y documentación actualizadas son revisiones externas; el código funcional
+ensayado se conserva. No se regenera ningún paquete de fuentes.
+
+El repositorio y main de Streamlit confirmados son
+ERIKACASAS98/skyrisk-lab-academico y main, con app_academica.py como entrada
+esperada y comprobada en el árbol local. Actualizar main puede activar despliegue;
+esta preparación no hace fetch, merge, commit, push ni cambio de configuración.
+La adición remota .devcontainer/devcontainer.json sigue fuera de la política local
+y requiere conciliación autorizada antes de integrar main remota, sin borrarla ni
+aceptar sus opciones silenciosamente. Solo se reutilizan los dos archivos de
+trazabilidad ya publicados, sin modificar módulos operacionales profesionales.

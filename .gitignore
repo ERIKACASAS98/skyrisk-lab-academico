@@ -1,4 +1,4 @@
-# Lista académica exacta; no retira archivos ya versionados.
+# Lista academica exacta; no retira archivos ya versionados.
 /**
 !/.streamlit/
 /.streamlit/**
@@ -28,23 +28,34 @@
 !/academico/__init__.py
 !/academico/ejecucion.py
 !/academico/escenarios.py
+!/academico/ml_retrasos.py
+!/academico/simulacion.py
 !/academico/worker.py
 !/app_academica.py
 !/demo/README.md
+!/demo/entradas_ampliadas.json
 !/demo/entradas_paso1.json
 !/demo/escenarios/.gitkeep
 !/docs/entrega1/arquitectura.md
+!/docs/entrega1/colab.md
 !/docs/entrega1/compatibilidad_cloud.md
 !/docs/entrega1/investigacion.md
 !/docs/entrega1/plan_optimizacion_interactiva.md
 !/docs/entrega1/presentacion.md
 !/docs/entrega1/validacion.md
+!/docs/entrega1/validacion_colab.ipynb
+!/docs/entrega1/validacion_colab_entorno_r2.ipynb
 !/docs/evidencias/evidencia_cpsat_publica.json
 !/herramientas/validadores/auditar_paquete_academico.py
+!/herramientas/validadores/preparar_colab.py
+!/herramientas/validadores/validar_cpsat_colab.py
 !/planificacion_comercial/__init__.py
 !/planificacion_comercial/trazabilidad_escenarios.py
 !/requirements.txt
+!/tests/test_ampliacion_academica.py
 !/tests/test_app_academica.py
+!/tests/test_colab_academico.py
 !/tests/test_ejecucion_academica.py
 !/tests/test_escenarios_academicos.py
+!/tests/test_ml_academico.py
 !/tests/test_publicacion_academica.py

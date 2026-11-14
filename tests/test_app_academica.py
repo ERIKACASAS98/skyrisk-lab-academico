@@ -67,7 +67,7 @@ class AppAcademicaTests(unittest.TestCase):
         self.addCleanup(admision.stop)
 
         def sin_motores(nombre, *args, **kwargs):
-            prohibidos = ('ortools', 'app', 'planificacion_comercial.planificador_continuo',
+            prohibidos = ('ortools', 'sklearn', 'app', 'planificacion_comercial.planificador_continuo',
                            'planificacion_comercial.optimizador_horarios',
                            'planificacion_comercial.rutas_maestras', 'planificacion_tripulaciones')
             if any(nombre == p or nombre.startswith(p + '.') for p in prohibidos):
@@ -194,6 +194,48 @@ class AppAcademicaTests(unittest.TestCase):
         app = self.abrir()
         with self.assertRaises(ValueError):
             app.switch_page('pages/Control_de_aeronaves.py')
+
+    def test_nuevas_vistas_no_resuelven_ni_entrenan_automaticamente(self):
+        with patch('academico.ejecucion.ejecutar_simulacion', side_effect=AssertionError('No resolver')) as solver, \
+             patch('academico.ml_retrasos.entrenar_evaluar', side_effect=AssertionError('No entrenar')) as ml:
+            app = self.abrir()
+            self.cambiar(app, 'Simulación ampliada')
+            self.assertEqual(len(app.dataframe[0].value), 12)
+            self.assertTrue(next(b for b in app.button if b.label == 'Planificar y recuperar').disabled)
+            self.cambiar(app, 'Predicción de retrasos')
+            solver.assert_not_called(); ml.assert_not_called()
+
+    def test_ml_entrena_solo_por_boton_y_conserva_resultado(self):
+        resultado = {'mae_ridge_minutos': 3.0, 'mae_dummy_minutos': 6.0,
+                     'ejemplos_prueba': [{'real': 10, 'predicho': 12}]}
+        with patch('academico.ml_retrasos.entrenar_evaluar', return_value=resultado) as entrenar:
+            app = self.cambiar(self.abrir(), 'Predicción de retrasos')
+            entrenar.assert_not_called()
+            app.button(key='entrenar_ml').click().run(timeout=15)
+            self.assertEqual(entrenar.call_count, 1)
+            self.assertEqual(app.session_state['ml_academico_valido'], resultado)
+            self.assertEqual([m.value for m in app.metric], ['3.000', '6.000'])
+
+    def test_contingencia_requiere_confirmacion_y_conserva_historico_ante_fallo(self):
+        admision = {'admitido': True, 'motivos': []}
+        resultado = {'run_id': 'FIXTURE_TEST_NO_SOLVER', 'resultado': {
+            'afectada': 'HK-001', 'original': {'asignaciones': {'AMP-01': {}}},
+            'recuperada': {'asignaciones': {}, 'pendientes': ['AMP-01']},
+            'comparacion': [{'id_vuelo': 'AMP-01', 'estado': 'PENDIENTE', 'sustituta': None}]}}
+        with patch('academico.ejecucion.evaluar_admision', return_value=admision), \
+             patch('academico.ejecucion.ejecutar_simulacion', return_value=resultado) as ejecutar:
+            app = self.cambiar(self.abrir(), 'Simulación ampliada')
+            next(b for b in app.button if b.label == 'Planificar y recuperar').click().run(timeout=15)
+            ejecutar.assert_not_called()
+            app.checkbox(key='confirmar_ampliada').check()
+            next(b for b in app.button if b.label == 'Planificar y recuperar').click().run(timeout=15)
+            self.assertEqual(ejecutar.call_count, 1)
+            self.assertEqual(app.session_state['simulacion_ampliada_valida'], resultado)
+        with patch('academico.ejecucion.evaluar_admision', return_value=admision), \
+             patch('academico.ejecucion.ejecutar_simulacion', side_effect=EjecucionError('fallo simulado')):
+            next(b for b in app.button if b.label == 'Planificar y recuperar').click().run(timeout=15)
+            self.assertEqual(app.session_state['simulacion_ampliada_valida'], resultado)
+            self.assertTrue(any('fallo simulado' in error.value for error in app.error))
 
 
 if __name__ == '__main__':

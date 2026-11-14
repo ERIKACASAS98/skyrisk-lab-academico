@@ -22,6 +22,18 @@ class PublicacionAcademicaTests(unittest.TestCase):
             'tipo_datos': 'SINTETICO', 'estado_ejecucion': 'SIN_EJECUCION', 'resultados': None}), encoding='utf-8')
         nombre = 'docs/evidencias/evidencia_cpsat_publica.json'
         (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
+        nombre = 'demo/entradas_ampliadas.json'
+        (raiz / nombre).write_bytes((a.ROOT / nombre).read_bytes())
+
+    def test_demo_ampliada_operacional_o_excesiva_no_es_publicable(self):
+        nombre = 'demo/entradas_ampliadas.json'
+        valido = json.loads((a.ROOT / nombre).read_bytes())
+        self.assertEqual(a.hallazgos_texto(nombre, json.dumps(valido).encode()), [])
+        valido['tipo_datos'] = 'OPERACIONAL'
+        self.assertTrue(a.hallazgos_texto(nombre, json.dumps(valido).encode()))
+        valido['tipo_datos'] = 'SINTETICO'
+        valido['operaciones'] *= 2
+        self.assertTrue(a.hallazgos_texto(nombre, json.dumps(valido).encode()))
 
     def test_evidencia_revisada_pasa_y_alteracion_se_rechaza(self):
         nombre = 'docs/evidencias/evidencia_cpsat_publica.json'

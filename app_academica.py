@@ -7,7 +7,8 @@ from academico.escenarios import (
     ConsultaError, PersistenciaError, cargar_entradas, consultar_escenario,
     listar_escenarios, texto_json, cargar_evidencia_colab,
 )
-from academico.ejecucion import EjecucionError, evaluar_admision, ejecutar_interactivo
+from academico.ejecucion import EjecucionError, evaluar_admision, ejecutar_interactivo, ejecutar_simulacion
+from academico.simulacion import cargar_simulacion
 
 
 st.set_page_config(page_title='SkyRisk Lab | Entrega 1', page_icon=':material/flight:', layout='wide')
@@ -222,6 +223,80 @@ def mostrar_optimizacion(datos):
         st.caption('Aún no existe un resultado CP-SAT válido en esta sesión.')
 
 
+def mostrar_simulacion():
+    st.subheader('Simulación nacional ampliada')
+    datos = cargar_simulacion()
+    st.info('Caso sintético independiente: hasta 12 trayectos, cuatro aeropuertos y cuatro aeronaves activas. '
+            'Las otras regulares y las tres reservas no están disponibles para esta simulación.')
+    st.dataframe(datos['operaciones'], hide_index=True, width='stretch')
+    st.write('Ubicaciones y disponibilidad de las aeronaves activas')
+    st.dataframe([dict(aeronave=m, **estado) for m, estado in datos['activas'].items()], hide_index=True, width='stretch')
+    admision = evaluar_admision()
+    if not admision['admitido']:
+        st.warning('Optimización ampliada deshabilitada: ' + ', '.join(admision['motivos']))
+    with st.form('contingencia_ampliada'):
+        afectada = st.selectbox('Aeronave indisponible durante toda la jornada', sorted(datos['activas']), key='afectada_ampliada')
+        confirmado = st.checkbox('Confirmo la simulación sintética y la contingencia de jornada completa.', key='confirmar_ampliada')
+        ejecutar = st.form_submit_button('Planificar y recuperar', disabled=not admision['admitido'])
+    if ejecutar:
+        if not confirmado:
+            st.error('Confirme el alcance de la simulación antes de ejecutar.')
+        else:
+            try:
+                with st.spinner('Resolviendo planificación base y contingencia...'):
+                    nuevo = ejecutar_simulacion(datos, afectada)
+                st.session_state['simulacion_ampliada_valida'] = nuevo
+                st.session_state.pop('error_ampliada', None)
+            except (OSError, ValueError, RuntimeError, PersistenciaError) as error:
+                st.session_state['error_ampliada'] = str(error)
+    if st.session_state.get('error_ampliada'):
+        st.error('Nueva simulación fallida: ' + st.session_state['error_ampliada'])
+    historico = st.session_state.get('simulacion_ampliada_valida')
+    if historico:
+        r = historico['resultado']
+        st.caption('HISTÓRICO DE SESIÓN · cambiar la selección no vuelve a ejecutar el solver. '
+                   'El temporal se elimina al finalizar; descargue el resultado para conservarlo.')
+        st.write('run_id:', historico['run_id'], '| Aeronave afectada en este resultado:', r['afectada'])
+        a, b, c = st.columns(3)
+        a.metric('Atendidos originales', len(r['original']['asignaciones']))
+        b.metric('Atendidos recuperados', len(r['recuperada']['asignaciones']))
+        c.metric('Pendientes recuperados', len(r['recuperada']['pendientes']))
+        st.dataframe(r['comparacion'], hide_index=True, width='stretch')
+        st.write('Pendientes:', r['recuperada']['pendientes'])
+        with st.expander('Diagnósticos, recursos y trazabilidad ampliada'):
+            st.json(historico)
+        st.download_button('Descargar simulación validada', texto_json(historico),
+                           file_name=f"{historico['run_id']}-ampliada.json", mime='application/json')
+
+
+def mostrar_ml():
+    st.subheader('Predicción académica de minutos de retraso')
+    st.info('Datos simulados: entrenamiento y evaluación reales de Ridge frente a DummyRegressor. '
+            'No está validado para vuelos reales y sus predicciones no modifican CP-SAT.')
+    st.caption('1.000 registros, separación por día: 800 para entrenamiento y 200 para prueba. '
+               'No se entrena al abrir o navegar por la aplicación.')
+    if st.button('Entrenar y evaluar ML', key='entrenar_ml'):
+        try:
+            from academico.ml_retrasos import entrenar_evaluar
+            with st.spinner('Entrenando y evaluando sobre días separados...'):
+                st.session_state['ml_academico_valido'] = entrenar_evaluar()
+            st.session_state.pop('error_ml', None)
+        except (ImportError, OSError, ValueError, RuntimeError) as error:
+            st.session_state['error_ml'] = str(error)
+    if st.session_state.get('error_ml'):
+        st.error('Experimento ML no completado: ' + st.session_state['error_ml'])
+    r = st.session_state.get('ml_academico_valido')
+    if r:
+        st.caption('Resultado del último entrenamiento explícito de esta sesión.')
+        a, b = st.columns(2)
+        a.metric('MAE Ridge (min)', f"{r['mae_ridge_minutos']:.3f}")
+        b.metric('MAE referencia (min)', f"{r['mae_dummy_minutos']:.3f}")
+        st.dataframe(r['ejemplos_prueba'], hide_index=True, width='stretch')
+        with st.expander('Datos, partición y métricas del experimento'):
+            st.json(r)
+        st.download_button('Descargar evaluación ML', texto_json(r), file_name='evaluacion_ml_sintetica.json', mime='application/json')
+
+
 def mostrar_demostrador():
 
     st.markdown(
@@ -253,7 +328,8 @@ def mostrar_demostrador():
     except (ConsultaError, OSError, ValueError, KeyError, TypeError) as error:
         st.error('No se pudo cargar el caso sintético: ' + str(error))
         return
-    vista = st.segmented_control('Vista académica', ['Resumen', 'Caso sintético', 'Optimización', 'Consulta histórica'],
+    vista = st.segmented_control('Vista académica', ['Resumen', 'Caso sintético', 'Optimización', 'Consulta histórica',
+                                                   'Simulación ampliada', 'Predicción de retrasos'],
                                 default='Resumen', key='vista_academica')
     if vista == 'Caso sintético':
         mostrar_caso(datos, sha)
@@ -261,6 +337,10 @@ def mostrar_demostrador():
         mostrar_resultados()
     elif vista == 'Optimización':
         mostrar_optimizacion(datos)
+    elif vista == 'Simulación ampliada':
+        mostrar_simulacion()
+    elif vista == 'Predicción de retrasos':
+        mostrar_ml()
     else:
             
         st.markdown("### Centro de control operacional")
@@ -328,16 +408,16 @@ def mostrar_demostrador():
         with st.expander("Alcance y evidencia técnica"):
             st.write(
                 "La auditoría profesional previa fue aceptada con 112 pruebas. "
-                "El caso sintético obtuvo OPTIMAL en Colab. Existe además una ejecución local OPTIMAL informada; "
-                "la integración real completa desde Streamlit sigue pendiente."
+                "El caso original obtuvo OPTIMAL en Colab y tiene ejecución pública documentada en README. "
+                "La ampliación se desarrolla por separado; no se declara desplegada."
             )
             st.write(
                 "La validación del visor se documenta en "
                 "docs/entrega1/validacion.md."
             )
             st.write(
-                "GitHub público, compatibilidad Linux y despliegue "
-                "cloud pendientes de verificación."
+                "La modalidad ampliada conserva los controles de admisión. Su despliegue y "
+                "la instalación Linux de sus nuevas dependencias requieren verificación independiente."
             )
             st.caption(
                 "El demostrador académico no declara terminada "

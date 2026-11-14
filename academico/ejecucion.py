@@ -272,15 +272,29 @@ def ejecutar_interactivo():
         return _ejecutar_exclusivo()
 
 
-def _ejecutar_exclusivo():
+def ejecutar_simulacion(entrada, afectada):
+    """Escenario v2 aislado del archivo y de los validadores originales."""
+    from copy import deepcopy
+    from academico.simulacion import validar_entrada
+    datos = deepcopy(entrada)
+    validar_entrada(datos)
+    if afectada not in datos['activas']:
+        raise EjecucionError('Aeronave afectada no activa')
+    with _exclusion_ensayo():
+        return _ejecutar_exclusivo({'entrada': datos, 'afectada': afectada})
+
+
+def _ejecutar_exclusivo(solicitud=None):
     admision = evaluar_admision()
     if not admision['admitido']:
         raise EjecucionError('Optimización deshabilitada: ' + ', '.join(admision['motivos']))
     with tempfile.TemporaryDirectory(prefix='SkyRiskLab-academico-') as temporal:
+        if solicitud is not None:
+            return _ejecutar_en_temporal(Path(temporal).resolve(), admision, solicitud=solicitud)
         return _ejecutar_en_temporal(Path(temporal).resolve(), admision)
 
 
-def _ejecutar_en_temporal(raiz, admision):
+def _ejecutar_en_temporal(raiz, admision, *, solicitud=None):
     control = raiz / 'control'; control.mkdir()
     token = uuid4().hex
     configuracion = {'token_sha256': hashlib.sha256(token.encode()).hexdigest(),
@@ -289,6 +303,13 @@ def _ejecutar_en_temporal(raiz, admision):
                                 'max_time_in_seconds': 30, 'cp_model_presolve': False},
                      'limites': {'productor_s': PRODUCTOR_S, 'recuperador_s': RECUPERADOR_S,
                                  'ensayo_s': ENSAYO_S, 'almacen_bytes': ALMACEN_MAX}}
+    if solicitud is not None:
+        from academico.simulacion import huella
+        configuracion['solicitud'] = solicitud
+        configuracion['entrada_sha256'] = huella(solicitud['entrada'])
+        configuracion['perfil'] = {'nombre': 'AMPLIADO_V2', 'num_search_workers': 4,
+                                   'max_time_por_plan_s': 15, 'max_time_solver_total_s': 30,
+                                   'cp_model_presolve': False}
     (control / 'configuracion.json').write_text(json.dumps(configuracion, sort_keys=True), encoding='utf-8')
     inicio = time.perf_counter(); deadline = inicio + ENSAYO_S
     productor = _proceso('productor', raiz, token, deadline=deadline)

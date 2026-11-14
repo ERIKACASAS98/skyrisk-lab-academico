@@ -3,9 +3,9 @@
 ## Estado y objetivo
 
 La entrega utiliza una aplicación Streamlit independiente para explorar entradas
-sintéticas y consultar escenarios verificados. La publicación de GitHub y el
-despliegue en Streamlit Community Cloud están pendientes de aprobación y prueba
-real. No existe todavía una URL pública verificada.
+sintéticas y consultar escenarios verificados. La versión original está publicada
+y su ejecución cloud figura en README. La ampliación v2 se prepara en una rama
+separada y todavía no se publica ni se despliega.
 
 Se conserva la estructura profesional de SkyRisk Lab V5.2. `app.py`, SQLite
 operacional, mantenimiento, motores comerciales y tripulaciones no se modifican
@@ -15,8 +15,9 @@ La entrega objetivo tendrá dos modalidades: optimización interactiva del caso 
 dos trayectos, mediante botón explícito, y consulta histórica como respaldo.
 Ambas rutas están implementadas. La interacción y conservación del histórico se
 probaron con procesos simulados. El CP-SAT real obtuvo OPTIMAL en Colab;
-existe además una ejecución local OPTIMAL informada. La integración real completa
-desde Streamlit y la instalación Linux del código actual siguen pendientes.
+existe además una ejecución local OPTIMAL informada y la ejecución pública del
+original está documentada. La instalación Linux y la ejecución real del nuevo
+modelo ampliado requieren verificación independiente.
 
 ## Componentes y responsabilidades
 
@@ -215,3 +216,47 @@ del hash de escenario y entradas. No sustituye la cadena original de manifiestos
 La huella de copia normaliza solo CRLF/LF para Git Windows/Linux.
 Su archivo está incluido explícitamente junto con `.streamlit/config.toml`, que
 solo conserva tema y opciones de interfaz, nunca secretos.
+
+## Ampliación v2 aislada del original — rama de desarrollo
+
+Componentes adicionales:
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| demo/entradas_ampliadas.json | Jornada nacional de 12 vuelos, cuatro aeropuertos y cuatro activas |
+| academico/simulacion.py | Esquema v2, red temporal CP-SAT, verificador independiente, comparación y recuperación |
+| academico/ml_retrasos.py | Generador reproducible, partición por día, Pipeline Ridge y referencia Dummy |
+| tests/test_ampliacion_academica.py | 13 comprobaciones sin solver y seis ensayos CP-SAT condicionados a admisión |
+| tests/test_ml_academico.py | Cuatro pruebas de datos, entrenamiento real, fuga y exclusión |
+
+El archivo original de dos trayectos y sus validadores se conservan. El worker
+solo despacha v2 cuando el control contiene una solicitud ampliada explícita.
+El supervisor transmite una copia completa e inmutable del caso y del incidente;
+el productor persiste entrada, resultado base, resultado recuperado y comparación.
+El recuperador comprueba hashes, planes y correspondencia con el incidente solicitado.
+No se modifica el módulo compartido planificacion_comercial/trazabilidad_escenarios.py.
+
+Por aeronave se construye un camino en un grafo acíclico ordenado por salida.
+Los arcos unen exclusivamente vuelos cuyo aeropuerto de llegada coincide con el
+de salida siguiente y permiten al menos 60 minutos de tránsito. Un arco inicial
+exige ubicación y disponibilidad iniciales. Las ecuaciones de flujo impiden
+rotaciones desconectadas y la restricción global permite como máximo una aeronave
+por vuelo. Bloquear una aeronave anula sus visitas durante toda la jornada.
+
+El objetivo ponderado respeta el orden cobertura > estabilidad > matrícula;
+los pesos se calculan usando las cotas pequeñas del caso. El campo de diagnóstico
+objetivo_ponderado no equivale al número de vuelos. La cobertura se publica aparte.
+Un verificador ajeno a la construcción CP-SAT recorre las rotaciones resultantes
+para detectar cambios de horarios, vuelos desconocidos, vuelos repetidos,
+teletransportes, solapamientos, insuficiente tránsito o uso de aeronaves bloqueadas.
+El modelo está implementado; su ejecución real queda pendiente de RAM suficiente.
+
+ML es independiente de la red CP-SAT. Importar módulos o navegar no entrena.
+El botón ajusta preprocesamiento y Ridge sobre entrenamiento y mide MAE en días
+apartados, junto con DummyRegressor. El día y el retraso observado no son
+predictores. Los resultados permanecen en sesión con descarga JSON, sin pickle.
+Entrenamiento y optimización comparten exclusión por hilo/archivo del servidor;
+no coordina réplicas con temporales independientes.
+
+El nuevo código no se declara instalado ni ejecutado sobre Linux. El lanzador
+portable ya existente y la supervisión se reutilizan, sin reducir límites.

@@ -8,8 +8,10 @@ del optimizador?
 
 El problema combina asignación, secuenciación temporal, restricciones de recursos
 y trazabilidad de software. CP-SAT permite expresar decisiones discretas y buscar
-soluciones factibles u óptimas para un modelo definido. El proyecto no utiliza un
-modelo predictivo entrenado ni presenta un porcentaje de precisión de aprendizaje.
+soluciones factibles u óptimas para un modelo definido. La versión original usa
+optimización, sin aprendizaje entrenado. La ampliación en desarrollo incorpora
+Ridge entrenado y evaluado sobre datos sintéticos; comunica MAE en minutos, no un
+porcentaje de precisión ni validación sobre vuelos reales.
 
 ## Evidencia disponible y límites
 
@@ -20,9 +22,9 @@ modelo predictivo entrenado ni presenta un porcentaje de precisión de aprendiza
 | Reglas internacionales | Pruebas previas de tránsito y permanencia | Evidencia de límites en los escenarios probados |
 | Trazabilidad | Pruebas de hashes, fallos, recuperación y consulta | Recuperabilidad del formato bajo los fallos de aplicación probados |
 | Paso 1 con SQLite temporal real | Ejecución real del escenario académico en Google Colab, con productor, CP-SAT y recuperador independientes | Resultado OPTIMAL, dos trayectos confirmados, recuperación COMPLETA y evidencia con hashes; limitado al escenario sintético ensayado |
-| Modalidad interactiva del demostrador | Botón y controles probados con procesos simulados | No representa aún una solución real ejecutada desde Streamlit |
+| Modalidad interactiva original | README documenta ejecución OPTIMAL desde Streamlit público; pruebas automatizadas con fixtures por separado | Evidencia del caso original, no de la ampliación |
 | Resultados semanales | Sin instantánea individual recuperable del resumen 896/966 | No usar ese agregado para comparar algoritmos ni reconstruir IDs |
-| Cloud académico | Diseño y preparación | Despliegue y funcionamiento real todavía pendientes |
+| Cloud académico | Versión original publicada; ampliación local sin desplegar | La publicación previa no valida nuevas dependencias ni el modelo v2 |
 
 No se infiere que todo vuelo pendiente sea imposible. `UNKNOWN` significa que
 no se ha determinado una solución o una prueba de inviabilidad antes de una
@@ -113,3 +115,35 @@ evidencias con los límites correspondientes.
 - [Validación pública de la entrega](validacion.md). El registro profesional de
   auditoría se conserva localmente fuera del paquete publicado.
 - [Arquitectura de la entrega](arquitectura.md).
+
+## Experimento ML nivel 1 y contingencias nacionales v2
+
+El generador sintético RETRASOS_V1 combina congestión prevista, viento previsto,
+lluvia prevista, hora programada y origen, con ruido gaussiano y límite inferior
+cero. La fórmula está disponible en academico/ml_retrasos.py. No reproduce una
+fuente operacional ni acredita calibración con una aerolínea. La semilla fija
+permite repetir las 1.000 filas y su huella sin descargar datos personales.
+
+La unidad de separación es el día sintético (100 grupos, 80/20). Se ajustan
+StandardScaler, OneHotEncoder y Ridge exclusivamente sobre los 800 registros de
+entrenamiento; los 200 de prueba solo se predicen y evalúan. El retraso observado
+y la identidad del día no se incluyen entre las características. No se usan
+salidas del optimizador como etiqueta o predictor. DummyRegressor(media de
+entrenamiento) proporciona una referencia honesta.
+
+La evaluación real local obtuvo MAE Ridge de 3,0628 minutos y referencia de
+6,2102 minutos. La mejora indica ajuste a relaciones del generador, no precisión
+real ni garantía de generalización. No se seleccionaron hiperparámetros mirando
+el conjunto de prueba, no se afirma significación estadística ni validez externa.
+La extensión no conecta estas estimaciones con las restricciones CP-SAT.
+
+La hipótesis operacional v2 es que una red temporal evita asignaciones físicamente
+inconsistentes y permite comparar una jornada con y sin una aeronave. Se construyó
+un caso nacional con ubicaciones iniciales y escasez en CLO/CTG para que una avería
+pueda afectar la cobertura. La red y su verificador están implementados; las
+pruebas de entradas, planes y recuperación usan fixtures sin solver. Las seis
+pruebas reales de CP-SAT permanecen pendientes por RAM insuficiente: no se presentan
+hipótesis o salidas esperadas como conclusiones experimentales.
+
+La validación histórica original sigue separada. Ningún resultado sintético
+certifica V5.2, mantenimiento, rutas internacionales o tripulaciones.

@@ -18,6 +18,11 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 PERMITIDOS = frozenset({
+    'docs/entrega1/validacion_colab_entorno_r2.ipynb',
+    'herramientas/validadores/preparar_colab.py', 'herramientas/validadores/validar_cpsat_colab.py',
+    'docs/entrega1/validacion_colab.ipynb', 'docs/entrega1/colab.md', 'tests/test_colab_academico.py',
+    'academico/simulacion.py', 'academico/ml_retrasos.py', 'demo/entradas_ampliadas.json',
+    'tests/test_ampliacion_academica.py', 'tests/test_ml_academico.py',
     '.streamlit/config.toml', 'docs/evidencias/evidencia_cpsat_publica.json',
     '.gitignore', 'README.md', 'app_academica.py', 'requirements.txt',
     'academico/__init__.py', 'academico/escenarios.py',
@@ -95,6 +100,15 @@ def hallazgos_texto(nombre, contenido):
                 hallazgos.append({'archivo': nombre, 'tipo': 'DEMO_NO_DECLARADA_COMO_ENTRADA_SINTETICA_SIN_RESULTADOS'})
         except (ValueError, TypeError):
             hallazgos.append({'archivo': nombre, 'tipo': 'JSON_DEMO_INVALIDO'})
+    if nombre == 'demo/entradas_ampliadas.json':
+        try:
+            datos = json.loads(texto)
+            if (datos.get('version') != 2 or datos.get('tipo_datos') != 'SINTETICO'
+                    or not 1 <= len(datos['operaciones']) <= 12
+                    or set(datos['aeropuertos']) != {'BOG', 'MDE', 'CLO', 'CTG'}):
+                hallazgos.append({'archivo': nombre, 'tipo': 'DEMO_AMPLIADA_FUERA_DE_ALCANCE'})
+        except (ValueError, TypeError, KeyError, AttributeError):
+            hallazgos.append({'archivo': nombre, 'tipo': 'JSON_DEMO_AMPLIADA_INVALIDO'})
     return hallazgos
 
 

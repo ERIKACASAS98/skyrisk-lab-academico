@@ -163,7 +163,20 @@ def main(argv=None):
         raise SystemExit(2)
     try:
         _comprobar_cancelacion(raiz)
-        funcion = (lambda: producir(raiz)) if args.modo == 'productor' else (lambda: recuperar(raiz, args.run_id))
+        if 'solicitud' in config:
+            from academico.simulacion import producir_simulacion, consultar_simulacion, huella
+            solicitud = config['solicitud']
+            if huella(solicitud['entrada']) != config['entrada_sha256']:
+                raise ValueError('Hash de solicitud ampliada inconsistente')
+            def funcion():
+                if args.modo == 'productor':
+                    return producir_simulacion(raiz, solicitud)
+                resultado = consultar_simulacion(args.run_id, raiz / 'ejecuciones')
+                if resultado['entrada'] != solicitud['entrada'] or resultado['afectada'] != solicitud['afectada']:
+                    raise ValueError('La recuperación no coincide con la solicitud ampliada')
+                return {'run_id': args.run_id, 'hash_escenario': huella(resultado), 'resultado': resultado}
+        else:
+            funcion = (lambda: producir(raiz)) if args.modo == 'productor' else (lambda: recuperar(raiz, args.run_id))
         datos, metricas = _medir(raiz, args.modo, funcion)
         _comprobar_cancelacion(raiz)
         print(json.dumps({'correcto': True, 'pid': os.getpid(), **datos, 'metricas': metricas},

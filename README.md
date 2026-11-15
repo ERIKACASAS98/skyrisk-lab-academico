@@ -1,688 +1,301 @@
-
-# SkyRisk Lab ✈️
-
-> Ampliación académica v2: escenario de 12 trayectos, contingencias y Ridge sobre
-> datos sintéticos. CP-SAT está validado en Colab y ML evaluado localmente.
-> La ejecución real de esta ampliación desde la interfaz pública se verifica
-> por separado del código publicado. Evidencias y límites al final del documento.
-### Inteligencia operacional aplicada a la aviación
-
-SkyRisk Lab es un proyecto de inteligencia operacional aeronáutica que busca integrar inteligencia artificial, analítica de datos y optimización matemática para apoyar la planificación y la toma de decisiones en las operaciones aéreas.
-
-# Nuestra visión
-
-Nuestro propósito es desarrollar una plataforma integral capaz de analizar escenarios operacionales, anticipar contingencias y evaluar alternativas que permitan tomar decisiones más eficientes, seguras y sostenibles.
-
-No buscamos simplemente aumentar la cantidad de vuelos ni reducir costos. **Buscamos optimizar las decisiones**, equilibrando factores como:
-
-- Seguridad operacional y cumplimiento de restricciones.
-- Disponibilidad y utilización responsable de aeronaves.
-- Planificación y bienestar de las tripulaciones.
-- Continuidad del servicio y puntualidad.
-- Costos operacionales y capacidad de respuesta ante contingencias.
-
-SkyRisk Lab está concebido como una herramienta de apoyo a la toma de decisiones, no como un sustituto del criterio de los profesionales aeronáuticos.
-
-# ¿Qué hemos desarrollado?
-
-Como primera etapa, desarrollamos un demostrador académico para el curso **Introducción a la Inteligencia Artificial**, utilizando Python, Streamlit y OR-Tools CP-SAT.
-
-El demostrador permite optimizar la asignación de aeronaves para un escenario sintético de dos trayectos nacionales, considerando 47 aeronaves regulares y tres de reserva excluidas de la programación rutinaria.
-
-En esta implementación inicial, la función objetivo maximiza los trayectos asignados, con unicidad y continuidad de la cadena fija de dos vuelos. La ubicación y disponibilidad por aeronave se modelan explícitamente en la ampliación v2.
-
-Este objetivo matemático específico no debe confundirse con la visión integral de SkyRisk Lab, que contempla múltiples criterios de optimización.
-
-# Estado actual del proyecto
-
-- Repositorio académico publicado en GitHub.
-- Aplicación desplegada en Streamlit Community Cloud.
-- Ejecución real de OR-Tools CP-SAT desde la interfaz.
-- Resultado OPTIMAL: 2 de 2 trayectos asignados.
-- Recuperación y validación del resultado desde un proceso independiente.
-- Datos exclusivamente sintéticos.
-
-**Alcance:** esta versión demuestra la optimización de dos trayectos. No representa todavía una plataforma operacional completa ni un sistema autorizado para uso real en una aerolínea.
-
-
-
-# Problema que buscamos resolver
-
-La planificación de operaciones aéreas implica coordinar múltiples recursos que dependen unos de otros. La disponibilidad de aeronaves, sus ubicaciones, los itinerarios, los tiempos de tránsito y las restricciones operacionales deben considerarse conjuntamente.
-
-Una decisión que parece adecuada de manera individual puede generar dificultades en otras partes de la operación, como retrasos, conflictos de programación, utilización ineficiente de recursos o cancelaciones.
-
-SkyRisk Lab busca abordar este problema mediante herramientas que permitan evaluar alternativas y apoyar decisiones operacionales de manera integral.
-
-## Alcance de esta primera implementación
-
-Para demostrar el funcionamiento de la solución, desarrollamos un escenario académico con las siguientes características:
-
-- Dos trayectos nacionales sintéticos: Bogotá–Medellín y Medellín–Bogotá.
-- Una flota simulada de 50 aeronaves Airbus A320.
-- 47 aeronaves regulares elegibles para asignación.
-- Tres aeronaves de reserva excluidas de la programación rutinaria.
-- Tiempo mínimo de tránsito de 60 minutos.
-- Restricciones de asignación y continuidad física de las aeronaves.
-
-El demostrador utiliza un modelo de optimización con restricciones para encontrar una solución válida al escenario planteado.
-
-Esta primera etapa no incluye la planificación de tripulaciones, la optimización semanal completa ni la gestión operacional real de una aerolínea.
-
-Su propósito es comprobar, mediante un caso controlado y verificable, cómo la optimización matemática puede contribuir a resolver problemas de planificación aeronáutica.
-
-
-
-# Inteligencia artificial y optimización
-
-SkyRisk Lab utiliza técnicas de optimización matemática para evaluar alternativas de planificación y encontrar soluciones que respeten las restricciones operacionales establecidas.
-
-Para esta primera implementación seleccionamos **OR-Tools CP-SAT**, un solucionador de programación por restricciones desarrollado por Google, que combina técnicas de búsqueda, programación por restricciones y optimización.
-
-## ¿Por qué CP-SAT?
-
-La asignación de aeronaves es un problema de decisiones interdependientes. No basta con encontrar una aeronave disponible: también debemos comprobar que pueda realizar el trayecto, encontrarse en la ubicación adecuada y cumplir los tiempos mínimos entre operaciones.
-
-CP-SAT permite representar estas condiciones mediante variables de decisión, restricciones y una función objetivo.
-
-## ¿Cómo funciona nuestro modelo?
-
-El demostrador académico utiliza:
-
-- **94 variables binarias:** representan posibles asignaciones entre 47 aeronaves regulares y dos trayectos.
-- **49 restricciones:** limitan las combinaciones permitidas según las reglas del escenario.
-- **Función objetivo:** maximizar el número de trayectos asignados sin incumplir las restricciones del modelo.
-- **Solucionador CP-SAT:** busca una combinación válida y determina si puede demostrar su optimalidad.
-
-## Optimización frente a maximización
-
-La optimización consiste en encontrar la mejor solución de acuerdo con los objetivos y las restricciones definidos. Dependiendo del problema, puede implicar maximizar, minimizar o equilibrar varios criterios.
-
-En este demostrador, maximizar los trayectos asignados es una función objetivo específica y simplificada.
-
-La visión futura de SkyRisk Lab es desarrollar una optimización integral que considere simultáneamente seguridad, continuidad operacional, costos, disponibilidad de recursos y bienestar de las tripulaciones.
-
-## Interpretación de resultados
-
-El solucionador puede devolver estados como:
-
-- **OPTIMAL:** encontró una solución y demostró que es óptima para el modelo.
-- **FEASIBLE:** encontró una solución válida, sin demostrar necesariamente que sea óptima.
-- **INFEASIBLE:** demostró que no existe una solución que cumpla todas las restricciones.
-- **UNKNOWN:** no pudo determinar un resultado concluyente dentro de los límites establecidos.
-
-Un resultado óptimo para dos trayectos no significa que se haya optimizado toda la operación de una aerolínea.
-
-Esta implementación corresponde a optimización y búsqueda con restricciones; no utiliza un modelo predictivo entrenado con datos históricos.
-
-
-# Arquitectura tecnológica
-
-SkyRisk Lab Académico utiliza una arquitectura modular desarrollada en Python y desplegada en Streamlit Community Cloud.
-
-La solución separa la interfaz, la validación de entradas, la ejecución del optimizador y la recuperación de resultados. Esta separación permite mantener un flujo de ejecución controlado y facilita las pruebas y el mantenimiento del código.
-
-## Componentes principales
-
-| Componente | Tecnología | Función |
-|---|---|---|
-| Interfaz web | Streamlit | Permite explorar el escenario, ejecutar la optimización y consultar resultados. |
-| Lógica de aplicación | Python | Gestiona las entradas, validaciones y flujo de ejecución. |
-| Motor de optimización | Google OR-Tools CP-SAT | Resuelve el problema de asignación de aeronaves bajo restricciones. |
-| Ejecución independiente | Procesos de Python | Aísla el cálculo del proceso principal de la interfaz. |
-| Recuperación y validación | Python | Recupera y comprueba los resultados generados por el optimizador. |
-| Alojamiento en la nube | Streamlit Community Cloud | Permite acceder al demostrador desde un navegador. |
-| Control de versiones | Git y GitHub | Mantiene el código, la documentación y el historial del proyecto. |
-
-## Flujo de funcionamiento
-
-1. El usuario accede a la aplicación desplegada en la nube.
-2. Streamlit presenta el escenario sintético y sus restricciones.
-3. La aplicación valida las condiciones necesarias para iniciar la ejecución.
-4. Un proceso independiente ejecuta el modelo de optimización CP-SAT.
-5. El sistema recupera y valida el resultado del proceso.
-6. Streamlit presenta el estado del solucionador, las asignaciones y las métricas disponibles.
-
-## Consideraciones técnicas
-
-La aplicación incorpora controles de recursos y límites de ejecución para reducir el riesgo de sobrecarga del entorno.
-
-El motor CP-SAT se ejecuta en un proceso independiente, con mecanismos de recuperación y validación de resultados.
-
-Los datos utilizados son sintéticos y el demostrador no se conecta a sistemas operacionales reales de aerolíneas.
-
-La documentación detallada de la arquitectura se encuentra en [Arquitectura técnica](docs/entrega1/arquitectura.md).
-
-
-
-## Demostración pública
-
-SkyRisk Lab Académico está desplegado en Streamlit Community Cloud y puede utilizarse directamente desde un navegador.
-
-**Aplicación web:** [Acceder a SkyRisk Lab](https://erikacasas98-jeerw6vvkvzvbt2s5yjnyr.streamlit.app/)
-
-**Repositorio público:** [GitHub - SkyRisk Lab Académico](https://github.com/ERIKACAS98/skyrisk-lab-academico)
-
-## ¿Cómo explorar la aplicación?
-
-La interfaz está organizada en cuatro secciones:
-
-1. **Resumen:** presenta el propósito y las características del demostrador académico.
-2. **Caso sintético:** permite consultar los dos trayectos, las aeronaves elegibles y las restricciones del escenario.
-3. **Optimización:** permite ejecutar el modelo CP-SAT y consultar las asignaciones y métricas obtenidas.
-4. **Consulta histórica:** muestra las evidencias disponibles y diferencia los registros históricos de los resultados temporales de sesión.
-
-## Ejecución validada en la nube
-
-El 13 de noviembre de 2026 se ejecutó el modelo CP-SAT desde la aplicación desplegada en Streamlit Community Cloud.
-
-El resultado obtenido fue:
-
-- **Estado:** OPTIMAL.
-- **Trayectos asignados:** 2 de 2.
-- **Valor de la función objetivo:** 2.
-- **Aeronave asignada:** HK-003.
-- **Variables:** 94.
-- **Restricciones:** 49.
-- **Tiempo mínimo de tránsito:** 60 minutos.
-
-El resultado fue recuperado y validado desde un proceso independiente.
-
-Esta ejecución demuestra el funcionamiento del modelo en el escenario académico definido. No representa una optimización integral de la operación de una aerolínea.
-
-**Nota:** los resultados generados durante la sesión no se almacenan automáticamente en un catálogo permanente.
-
-
-# Resultados y evidencias
-
-SkyRisk Lab Académico cuenta con ejecuciones reales del modelo OR-Tools CP-SAT y pruebas automatizadas que respaldan el funcionamiento del demostrador.
-## Ejecución en Streamlit Community Cloud
-
-El 13 de noviembre de 2026 se ejecutó el modelo desde la aplicación pública.
-
-| Indicador | Resultado |
-|---|---|
-| Estado del solucionador | OPTIMAL |
-| Trayectos asignados | 2 de 2 |
-| Valor objetivo | 2 |
-| Cota superior | 2 |
-| Aeronave asignada | HK-003 |
-| Variables | 94 |
-| Restricciones | 49 |
-| Tránsito entre trayectos | 60 minutos |
-
-El resultado fue recuperado y validado desde un proceso independiente.
-
-El estado OPTIMAL indica que el solucionador demostró la optimalidad de la solución respecto de la función objetivo y las restricciones del escenario académico.
-
-## Ejecución en Google Colab
-
-También se realizó una ejecución independiente en Google Colab el 13 de noviembre de 2026.
-
-| Indicador | Resultado |
-|---|---|
-| Estado del solucionador | OPTIMAL |
-| Trayectos asignados | 2 de 2 |
-| Valor objetivo | 2 |
-| Cota superior | 2 |
-| Aeronave asignada | HK-049 |
-| Variables | 94 |
-| Restricciones | 49 |
-| Tiempo de resolución | 0.012 segundos |
-
-Ambas ejecuciones alcanzaron el mismo valor objetivo, aunque seleccionaron aeronaves diferentes.
-
-Esto no representa una contradicción: un problema de optimización puede tener varias soluciones igualmente óptimas.
-
-La evidencia histórica de Colab está disponible en:
-
-`docs/evidencias/evidencia_cpsat_publica.json`
-
-## Pruebas automatizadas
-
-Se aprobaron 60 pruebas académicas únicas, distribuidas en:
-
-| Componente | Pruebas aprobadas |
-|---|---:|
-| Lectura y validación | 24 |
-| Ejecución y recuperación | 17 |
-| Auditoría de publicación | 11 |
-| Interfaz académica | 8 |
-| **Total** | **60** |
-
-Estas pruebas verifican componentes del demostrador, pero no sustituyen las ejecuciones reales del solucionador.
-
-## Alcance de los resultados
-
-Las evidencias corresponden a un escenario sintético controlado de dos trayectos.
-
-No demuestran todavía escalabilidad a una programación semanal completa ni validan el uso operacional de SkyRisk Lab en una aerolínea.
-
-Los resultados de Streamlit Cloud se conservan temporalmente durante la sesión, mientras que la evidencia histórica de Colab está documentada en el repositorio.
-
-
-
-# Estructura del repositorio
-
-El repositorio de SkyRisk Lab Académico organiza el código fuente, los escenarios sintéticos, las pruebas y la documentación técnica de la solución.
-
-Su estructura principal es:
-
-```text
-skyrisk-lab-academico/
-│
-├── app_academica.py
-├── academico/
-├── demo/
-├── docs/
-│   ├── entrega1/
-│   └── evidencias/
-├── tests/
-├── herramientas/
-│   └── validadores/
-├── requirements.txt
-└── README.md
-```
-
-## Descripción de los componentes
-
-| Archivo o carpeta | Función |
-|---|---|
-| `app_academica.py` | Punto de entrada de la aplicación Streamlit. |
-| `academico/` | Componentes del demostrador, validaciones y ejecución controlada. |
-| `demo/` | Entradas y escenarios sintéticos utilizados en la demostración. |
-| `docs/entrega1/` | Documentación de arquitectura, investigación y validación. |
-| `docs/evidencias/` | Evidencias técnicas de ejecuciones documentadas. |
-| `tests/` | Pruebas automatizadas del proyecto académico. |
-| `herramientas/validadores/` | Utilidades de revisión y auditoría del paquete. |
-| `requirements.txt` | Dependencias necesarias para ejecutar la aplicación. |
-| `README.md` | Presentación, instrucciones y documentación general del proyecto. |
-
-## Organización académica
-
-El repositorio público contiene una versión delimitada de SkyRisk Lab, desarrollada para demostrar un componente inicial de optimización aeronáutica.
-
-El proyecto académico se mantiene separado del entorno profesional y utiliza exclusivamente información sintética.
-
-La documentación complementaria permite consultar los fundamentos técnicos, las decisiones de arquitectura y las evidencias de validación.
-
-## Instalación y ejecución local
-
-SkyRisk Lab Académico puede ejecutarse localmente utilizando Python y un entorno virtual independiente.
-
-## Requisitos
-
-- Python 3.14.
-- Git, para clonar el repositorio.
-- Conexión a Internet para instalar las dependencias.
-- Recursos suficientes para ejecutar el optimizador.
-
-Las principales bibliotecas utilizadas son:
-
-| Biblioteca | Versión | Propósito |
-|---|---|---|
-| Streamlit | 1.66.1 | Interfaz web |
-| pandas | 3.0.0 | Manejo de datos |
-| OR-Tools | 9.15.6755 | Motor de optimización CP-SAT |
-| psutil | 7.2.2 | Supervisión de recursos |
-
-## 1. Clonar el repositorio
+# SkyRisk Lab Académico
+
+Demostrador de planificación de aeronaves, recuperación ante contingencias y
+predicción de retrasos, desarrollado para Introducción a la Inteligencia Artificial
+de la Fundación Universitaria Católica del Norte.
+
+La versión publicada presenta **12 trayectos sintéticos, cuatro aeronaves activas
+y cuatro aeropuertos**. Combina OR-Tools CP-SAT y Ridge Regression. Sus resultados
+no están validados para operaciones reales de una aerolínea.
+
+**Actualización:** 14 de noviembre de 2026. Entrega académica: 16 de noviembre de
+2026. Interfaz publicada y comprobada a partir del commit
+[`853868e`](https://github.com/ERIKACASAS98/skyrisk-lab-academico/commit/853868e2f28189a58d6d46cbbc75a8ad58a8d2dc).
+
+- [Aplicación pública en Streamlit](https://erikacasas98-jeerw6vvkvzvbt2s5yjnyr.streamlit.app/)
+- [Repositorio en GitHub](https://github.com/ERIKACASAS98/skyrisk-lab-academico)
+
+Desarrollado por Erika Liliana Casas Toro y Viana Maria Ruiz Ruiz.
+
+## Objetivos
+
+- Explorar asignaciones respetando ubicaciones, horarios y continuidad física.
+- Comparar el plan inicial con la recuperación ante una aeronave indisponible.
+- Evaluar una predicción de retrasos frente a una referencia simple.
+- Distinguir entradas, resultados de sesión y evidencias históricas.
+
+## Escenario principal y funcionalidades
+
+Las [entradas ampliadas](demo/entradas_ampliadas.json) contienen **AMP-01 a AMP-12**,
+sin duplicaciones ni omisiones, entre Bogotá (BOG), Medellín (MDE), Cali (CLO) y
+Cartagena (CTG). Los horarios corresponden a una jornada en UTC.
+
+Participan HK-001 y HK-002 inicialmente en BOG, HK-003 en CLO y HK-004 en CTG,
+con disponibilidad explícita. El inventario conserva 47 regulares y tres reservas;
+solo las cuatro activas intervienen en la ampliación. Las demás aeronaves no se
+habilitan automáticamente.
+
+La aplicación permite consultar trayectos, filtrar por origen, bloquear una
+aeronave toda la jornada y solicitar el cálculo del plan base y su recuperación.
+Cuando existe un resultado validado, muestra asignaciones, cambios y pendientes.
+Las descargas conservan parámetros y diagnósticos retirados de pantalla.
+
+### Las cinco secciones actuales
+
+| Sección | Contenido |
+| --- | --- |
+| **Resumen** | 12 trayectos, cuatro aeropuertos, cuatro aeronaves activas, disponibilidad de recursos y único aviso general de datos sintéticos. |
+| **Trayectos** | Los doce trayectos, filtro por aeropuerto de origen y horarios UTC. |
+| **Planificación y contingencias** | Aeronave afectada, confirmación explícita, ejecución y comparación de planes. |
+| **Validación técnica** | Caso original de dos trayectos, ejecución opcional y consulta histórica, incluida evidencia Colab. |
+| **Predicción de retrasos** | Entrenamiento y evaluación de Ridge por botón, comparación del error y ejemplos. |
+
+Navegar no ejecuta CP-SAT ni entrena Ridge automáticamente. Un estado de recursos
+disponibles no acredita un resultado calculado. Si una ejecución posterior falla,
+se conserva el último resultado válido de sesión, identificado como histórico.
+
+## Optimización CP-SAT
+
+El [modelo ampliado](academico/simulacion.py) construye secuencias temporales por
+aeronave y aplica:
+
+- Como máximo una aeronave por trayecto.
+- Inicio alcanzable desde la ubicación y disponibilidad de cada aeronave activa.
+- Continuidad entre destino y origen de trayectos consecutivos.
+- Tránsito mínimo de 60 minutos y ausencia de solapamientos.
+- Exclusión de la aeronave bloqueada durante toda la jornada.
+- Clasificación completa de cada trayecto como asignado o pendiente, sin duplicados.
+
+El objetivo prioriza cobertura, luego conservar asignaciones del plan inicial
+durante la recuperación y finalmente una preferencia de matrícula. Admite planes
+parciales o vacíos; un pendiente no prueba imposibilidad en cualquier otro escenario.
+
+Utiliza cuatro trabajadores y hasta 15 segundos por plan, en dos resoluciones.
+Solo admite resultados `OPTIMAL` o `FEASIBLE`, con validación independiente.
+`FEASIBLE` no demuestra optimalidad; `UNKNOWN` no se convierte en solución vacía válida.
+
+### Ejecución supervisada y validación
+
+La [ejecución](academico/ejecucion.py) mantiene admisión mínima de 2 GiB de memoria
+libre para CP-SAT, comprobación del contenedor cuando aplica, exclusión entre
+ejecuciones y confirmación del usuario. La admisión común también verifica la
+integridad del caso original; sus metadatos `ORIGINAL` no describen el perfil
+ampliado `AMPLIADO_V2`.
+
+Productor y recuperador trabajan en procesos independientes. Se supervisan memoria,
+tiempo y almacenamiento; la cancelación es cooperativa, sin garantizar terminación
+forzada. El recuperador verifica hashes, correspondencia con la solicitud, planes
+y comparación. Los temporales se eliminan al finalizar: los resultados de sesión
+no alimentan automáticamente el catálogo histórico y deben descargarse para
+conservarlos.
+
+## Machine Learning: Ridge Regression
+
+El [experimento](academico/ml_retrasos.py) genera 1.000 registros en 100 días
+sintéticos, con semilla `20261114`. Predice minutos de retraso usando origen,
+destino, hora programada, congestión, viento y lluvia previstos.
+
+`GroupShuffleSplit` separa días completos: 800 registros de entrenamiento y 200
+de prueba. El pipeline ajusta `StandardScaler` y `OneHotEncoder` solo con
+entrenamiento y utiliza `Ridge(alpha=1, solver='lsqr')`. La referencia es
+`DummyRegressor`, que predice la media de entrenamiento. Las predicciones se
+limitan inferiormente a cero; no se ajustan hiperparámetros usando la prueba.
+
+| Resultado verificado | Valor |
+| --- | ---: |
+| MAE Ridge | **3,063 minutos** |
+| MAE de referencia | **6,210 minutos** |
+| Reducción aproximada del error | **50,7 %** |
+
+MAE significa error absoluto medio. La reducción se calcula como
+`(MAE de referencia − MAE Ridge) / MAE de referencia`, con los valores sin
+redondear: 3,0628339081 y 6,2101520217 minutos.
+
+El entrenamiento y evaluación se comprobaron localmente y, el 14/11/2026,
+mediante el botón de la aplicación pública en Streamlit: 3,063 y 6,210 minutos,
+sin excepción visible. Esto acredita el modelo predictivo, no una ejecución
+del optimizador ampliado en producción.
+
+El objetivo predictivo procede de una fórmula sintética con ruido. Las métricas
+miden aprendizaje del generador, no capacidad demostrada sobre vuelos reales.
+Ridge no modifica CP-SAT; usa un hilo de cómputo, comprueba 256 MiB disponibles
+y comparte la exclusión de ejecución con el optimizador.
+
+## Arquitectura
+
+| Tecnología o componente | Función |
+| --- | --- |
+| **Python** | Coordinación, validaciones y procesos independientes. |
+| **Streamlit** | Interfaz de cinco secciones y acciones explícitas. |
+| **OR-Tools CP-SAT** | Asignación y recuperación bajo restricciones. |
+| **scikit-learn** | Preprocesamiento, Ridge, referencia y evaluación. |
+| **Pandas** | Preparación y manejo tabular de datos. |
+| **psutil** | Admisión y supervisión de recursos. |
+| **Validadores y hashes** | Integridad, correspondencia con la solicitud y verificación independiente de planes. |
+| **GitHub y Streamlit Community Cloud** | Código público y alojamiento del demostrador. |
+
+El flujo de optimización es: entradas → admisión y confirmación → productor →
+recuperador independiente → resultado validado. La predicción se entrena y evalúa
+por su propio botón. No se requiere una base de datos operacional.
+
+| Ruta | Contenido |
+| --- | --- |
+| `app_academica.py` | Interfaz publicada. |
+| `academico/simulacion.py` | Ampliación, contingencias y validación de planes. |
+| `academico/ejecucion.py` y `academico/worker.py` | Admisión, supervisión y procesos aislados. |
+| `academico/escenarios.py` | Entradas originales, consulta e integridad histórica. |
+| `academico/ml_retrasos.py` | Generador sintético y evaluación Ridge. |
+| `planificacion_comercial/trazabilidad_escenarios.py` | Almacén de trazabilidad utilizado por el demostrador. |
+| `demo/`, `tests/`, `docs/`, `herramientas/validadores/` | Escenarios, pruebas, documentos y auditoría. |
+
+## Resultados, pruebas y evidencia histórica
+
+| Componente | Estado y alcance |
+| --- | --- |
+| Interfaz publicada, 14/11/2026 | Cinco secciones recorridas; 12 de 12 trayectos; dos originales en Validación técnica y aviso general único. |
+| Ridge en Streamlit, 14/11/2026 | Entrenamiento y evaluación reales por botón; MAE 3,063 frente a 6,210 minutos. |
+| CP-SAT ampliado en producción | Interfaz y controles disponibles; **no se acredita una ejecución nueva exitosa de los 12 trayectos en Streamlit**. |
+| CP-SAT ampliado en Colab | Informe histórico de seis pruebas reales aprobadas, incluida la regresión original; log y manifiesto inspeccionados. |
+| Caso original en Colab | Evidencia pública: `OPTIMAL`, dos trayectos con HK-049, objetivo y cota 2, 94 variables y 49 restricciones. |
+| Caso original en Streamlit, 13/11/2026 | Registro documental de `OPTIMAL`, dos de dos trayectos con HK-003 y recuperación independiente. No corresponde al caso ampliado. |
+
+El caso original Bogotá–Medellín–Bogotá, con tránsito de 60 minutos, 47 regulares
+elegibles y tres reservas excluidas, queda como validación secundaria. Las
+matrículas históricas distintas son compatibles con múltiples soluciones óptimas.
+
+La [evidencia pública de Colab](docs/evidencias/evidencia_cpsat_publica.json)
+conserva el resumen original, pero no todos los archivos para revalidar la cadena
+completa de eventos. El informe ampliado está descrito en
+[Validación técnica](docs/entrega1/validacion.md); el ZIP inspeccionado permanece
+en custodia local, fuera del repositorio público. No se inventan matrices de
+asignación ni tiempos ausentes del informe.
+
+### Suite automatizada vigente
+
+La última repetición local documentada del 14/11/2026 descubrió **98 pruebas**:
+
+| Estado | Cantidad |
+| --- | ---: |
+| Aprobadas | **92** |
+| Omitidas por restricciones de memoria | **6** |
+| Fallos | **0** |
+| Errores | **0** |
+
+Las seis omisiones son de `SolverAmpliadoRealTests`: cobertura y sustitución,
+pendiente al bloquear HK-003, comparación con enumeración, regresión original,
+supervisión ampliada y solución vacía con todas las aeronaves bloqueadas.
+La admisión rechazó CP-SAT por memoria libre inferior a 2 GiB
+(`RAM_HOST_MENOR_2_GIB`). **Una omisión no equivale a ejecución ni aprobación.**
+
+Las 92 aprobaciones incluyen 14 pruebas de interfaz, validadores y evaluación
+real de Ridge. Las fixtures no son resultados reales del solver. Las seis
+aprobaciones históricas de Colab pertenecen a otra ejecución y no se suman a
+las 92 locales para afirmar una suite completa ejecutada en Cloud.
+
+## Instrucciones de uso
+
+### Aplicación pública
+
+1. Abrir la [aplicación](https://erikacasas98-jeerw6vvkvzvbt2s5yjnyr.streamlit.app/).
+2. Consultar Resumen y explorar los doce Trayectos.
+3. En Planificación y contingencias, elegir una aeronave, confirmar el alcance
+   y ejecutar si la admisión lo permite. Si faltan recursos, conservar el bloqueo.
+4. Revisar el caso original y sus evidencias en Validación técnica.
+5. Pulsar Evaluar predicción de retrasos para entrenar y comparar Ridge.
+6. Descargar los resultados que se deseen conservar antes de cerrar la sesión.
+
+### Instalación local
+
+Se ha trabajado con Python 3.14.3 en Windows; Colab CP-SAT usó Python 3.13.18.
+El Dev Container está configurado con Python 3.13. Community Cloud configura su
+intérprete por separado; no se deduce su versión de estos entornos.
+
+Las versiones están fijadas en [requirements.txt](requirements.txt):
+
+| Dependencia | Versión |
+| --- | --- |
+| Streamlit | 1.66.1 |
+| Pandas | 3.0.0 |
+| OR-Tools | 9.15.6755 |
+| psutil | 7.2.2 |
+| scikit-learn | 1.9.1 |
 
 ```bash
-git clone https://github.com/ERIKACAS98/skyrisk-lab-academico.git
+git clone https://github.com/ERIKACASAS98/skyrisk-lab-academico.git
 cd skyrisk-lab-academico
 ```
 
-## 2. Crear el entorno virtual
-
-**Windows (PowerShell):**
+Windows (PowerShell):
 
 ```powershell
 py -3.14 -m venv .venv
+.venv/Scripts/python.exe -m pip install -r requirements.txt
+.venv/Scripts/python.exe -m streamlit run app_academica.py
 ```
 
-**Linux:**
+Linux, con un intérprete compatible y las dependencias disponibles:
 
 ```bash
-python3.14 -m venv .venv
-```
-
-## 3. Instalar las dependencias
-
-**Windows (PowerShell):**
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-**Linux:**
-
-```bash
+python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-```
-
-## 4. Iniciar la aplicación
-
-**Windows (PowerShell):**
-
-```powershell
-.\.venv\Scripts\python.exe -m streamlit run app_academica.py
-```
-
-**Linux:**
-
-```bash
 .venv/bin/python -m streamlit run app_academica.py
 ```
 
-Streamlit mostrará una dirección local que podrá abrirse desde el navegador.
-
-## Consideraciones de ejecución
-
-La interfaz puede explorarse sin iniciar el optimizador.
-
-Para ejecutar CP-SAT, el sistema comprueba previamente las condiciones de admisión, incluida la disponibilidad mínima de 2 GiB de memoria, según los controles implementados.
-
-Si el entorno no cumple los requisitos, la ejecución puede ser rechazada sin modificar las restricciones de seguridad.
-
-La instalación local no requiere bases de datos operacionales ni información real de aerolíneas.
-
-
-
-
-
-
-
-
-# Seguridad, ética y limitaciones
-
-SkyRisk Lab reconoce que las decisiones aeronáuticas pueden afectar la seguridad operacional, el bienestar de las tripulaciones, los recursos de una organización y la continuidad del servicio.
-
-Por esta razón, el desarrollo de la plataforma debe incorporar principios de seguridad, transparencia, responsabilidad y supervisión humana.
-
-## Protección de datos
-
-El demostrador académico utiliza exclusivamente información sintética.
-
-No requiere datos personales de tripulaciones, pasajeros ni empleados, y no se conecta a bases de datos operacionales de aerolíneas.
-
-El repositorio público se prepara mediante una lista explícita de archivos autorizados y un proceso de auditoría para reducir el riesgo de publicar información privada, credenciales o archivos del proyecto profesional.
-
-## Transparencia y explicabilidad
-
-El modelo utiliza variables, restricciones y una función objetivo definidas explícitamente.
-
-Los resultados permiten identificar las asignaciones realizadas y consultar información sobre el estado del solucionador.
-
-El estado OPTIMAL significa que se demostró la optimalidad de una solución respecto del modelo implementado; no garantiza que esa solución sea la mejor para una operación aeronáutica real.
-
-## Seguridad de ejecución
-
-La aplicación incorpora controles para limitar el consumo de recursos y supervisar la ejecución del optimizador.
-
-Entre ellos se encuentran:
-
-- Verificación previa de recursos, incluida la disponibilidad mínima de 2 GiB de memoria.
-- Ejecución del optimizador en un proceso independiente.
-- Límites supervisados de ejecución.
-- Recuperación y validación de resultados.
-- Mecanismos de cancelación cooperativa.
-
-Estos mecanismos reducen riesgos técnicos, pero no garantizan la terminación inmediata de todos los procesos ante cualquier fallo.
-
-## Supervisión humana y responsabilidad
-
-SkyRisk Lab está concebido como una herramienta de apoyo a la toma de decisiones.
-
-En una aplicación operacional futura, las recomendaciones deberán ser evaluadas por personal competente y cumplir la normativa aeronáutica aplicable.
-
-La plataforma no debe sustituir el criterio profesional ni priorizar objetivos económicos por encima de la seguridad.
-
-## Limitaciones actuales
-
-Esta primera implementación:
-
-- Trabaja con dos trayectos sintéticos.
-- No representa una programación semanal completa.
-- No incorpora todavía planificación de tripulaciones, mantenimiento o meteorología en el modelo académico.
-- No utiliza modelos predictivos entrenados con datos históricos.
-- No está validada para operar en una aerolínea real.
-- No almacena automáticamente las ejecuciones de sesión en un catálogo permanente.
-
-Los resultados obtenidos permiten validar el funcionamiento del demostrador dentro de su alcance, pero no deben extrapolarse a operaciones comerciales reales.
-
-La documentación detallada de las pruebas y limitaciones se encuentra en [Validación técnica](docs/entrega1/validacion.md).
-
-
-
-# Documentación y referencias
-
-SkyRisk Lab Académico fue desarrollado como parte del Taller ABP – Entrega 1 del curso Introducción a la Inteligencia Artificial, de la Fundación Universitaria Católica del Norte.
-
-La entrega reúne una solución tecnológica desplegada en la nube, su código fuente, documentación técnica y evidencias de funcionamiento.
-
-## Documentación del proyecto
-
-| Documento | Contenido |
-|---|---|
-| [Arquitectura tecnológica](docs/entrega1/arquitectura.md) | Componentes, diseño de la solución y flujo de ejecución. |
-| [Investigación y fundamentos](docs/entrega1/investigacion.md) | Justificación del problema y fundamentos tecnológicos. |
-| [Validación técnica](docs/entrega1/validacion.md) | Pruebas, resultados, evidencias y limitaciones. |
-| [Compatibilidad con la nube](docs/entrega1/compatibilidad_cloud.md) | Dependencias y consideraciones del entorno de despliegue. |
-| [Presentación académica](docs/entrega1/presentacion.md) | Estructura y contenido de la presentación del proyecto. |
-
-## Relación con los objetivos de la actividad
-
-El proyecto aborda los componentes solicitados en la entrega:
-
-- **Análisis del problema:** identificación de las dificultades de planificación y asignación de recursos aeronáuticos.
-- **Arquitectura tecnológica:** desarrollo de una aplicación modular desplegada en la nube.
-- **Ingeniería de software:** organización del código, control de versiones, pruebas y validaciones.
-- **Aplicación de inteligencia artificial:** utilización de optimización matemática mediante OR-Tools CP-SAT.
-- **Ética y responsabilidad:** protección de datos, transparencia, limitaciones y supervisión humana.
-- **Comunicación de resultados:** repositorio público, demostración funcional y presentación académica.
-
-## Recursos tecnológicos
-
-- [Python](https://www.python.org/)
-- [Streamlit](https://streamlit.io/)
-- [Google OR-Tools](https://developers.google.com/optimization)
-- [GitHub](https://github.com/)
-- [Streamlit Community Cloud](https://docs.streamlit.io/deploy/streamlit-community-cloud)
-
-## Acceso al proyecto
-
-**Repositorio:** https://github.com/ERIKACAS98/skyrisk-lab-academico
-
-**Aplicación:** https://erikacasas98-jeerw6vvkvzvbt2s5yjnyr.streamlit.app/
-
----
-
-**SkyRisk Lab — Inteligencia operacional para decisiones aeronáuticas más seguras, eficientes y responsables.**
-
-## Presentación académica — 14/11/2026
-
-El escenario principal muestra 12 trayectos, cuatro aeropuertos y cuatro aeronaves
-activas. Navegación: Resumen, Trayectos, Planificación y contingencias, Validación
-técnica y Predicción de retrasos. El resumen contiene el único aviso general de
-datos sintéticos; las otras vistas conservan estados operativos y errores.
-
-Validación técnica reúne el caso original de dos trayectos, su ejecución explícita
-y la consulta histórica. Sus entradas, resultados históricos y pruebas del motor
-se conservan. No se modifica CP-SAT ni Ridge.
-
-Los JSON, parámetros del solver, diagnósticos y hashes se consultan en las descargas
-y en los módulos y documentos técnicos del repositorio. La interfaz conserva las
-tablas de asignaciones, comparación y pendientes. Cada resultado de sesión conserva
-su aeronave afectada; una selección distinta requiere una nueva ejecución.
-
-La admisión común comprueba recursos y la integridad del caso original; sus campos
-de perfil ORIGINAL describen ese control, no el modelo ampliado. El motor ampliado
-mantiene el perfil AMPLIADO_V2, cuatro trabajadores y dos resoluciones de hasta
-15 segundos cada una. Se conservan supervisión, exclusión entre ejecuciones,
-autorización por formulario, validación independiente y recuperación por hashes.
-
-La navegación no ejecuta optimización ni entrenamiento automáticamente. Un estado
-de recursos disponibles no acredita resultados: estos se muestran solo tras una
-ejecución validada. Véase `docs/entrega1/validacion.md` para las comprobaciones de
-esta revisión. No se ha publicado ni desplegado este ajuste.
-
-## Ampliación académica v2 en desarrollo — 13/11/2026
-
-Esta rama conserva el caso original, el inventario de 47 regulares y tres
-reservas, y los bytes de la evidencia Colab. Esta revisión incorpora la ampliación.
-No modifica SQLite ni módulos profesionales.
-
-Las vistas **Trayectos** y **Planificación y contingencias** presentan 12 vuelos nacionales entre BOG, MDE,
-CLO y CTG. Solo cuatro aeronaves están activas: HK-001 y HK-002 en BOG, HK-003
-en CLO y HK-004 en CTG, con disponibilidad explícita. Las demás aeronaves del
-inventario no se habilitan automáticamente. No hay reposicionamiento, cambios
-de horarios, mantenimiento detallado ni tripulaciones.
-
-El modelo CP-SAT v2 construye caminos temporales por aeronave, con inicio factible,
-conservación de flujo y conexiones aeropuerto/horario con tránsito mínimo de
-60 minutos. Admite planes parciales y vacíos; cada vuelo queda asignado o pendiente.
-El objetivo prioriza cobertura, luego conservar asignaciones de la planificación
-base y finalmente una preferencia de matrícula. No se interpreta una solución
-FEASIBLE como prueba de optimalidad ni un pendiente como prueba de imposibilidad.
-
-Se puede seleccionar una aeronave activa y bloquearla toda la jornada. Una acción
-explícita calcula la base y la recuperación, valida ambas y muestra afectados,
-sustitutas reales, cambios y pendientes. Las pruebas reales de Colab verificaron
-12 vuelos atendidos antes y después de bloquear HK-001, con un cambio observable,
-y AMP-05 pendiente al bloquear HK-003 en CLO. El informe conserva resultados de
-pruebas, no todas las matrices de asignación: no se inventan matrículas sustitutas
-ni tiempos internos del solver ausentes de la evidencia. Los validadores también
-se comprobaron con fixtures explícitas sin solver.
-
-La solicitud completa se copia al temporal y se guarda con inventario, ubicaciones,
-incidente y hash canónico. El recuperador separado valida manifiestos, planes,
-comparación y correspondencia exacta con la solicitud. El resultado de sesión se
-puede descargar; el almacén temporal se elimina tras la salida de los procesos.
-No se incorpora automáticamente al catálogo histórico ni es persistencia durable.
-
-Se mantienen 2 GiB de admisión CP-SAT, 512/128 MiB de RSS productor/recuperador y
-los presupuestos de 60/15/90 s. Cada uno de los dos planes v2 tiene un presupuesto
-de solver de 15 s, dentro de los 30 s originales totales. Estos presupuestos son
-supervisados: la cancelación sigue siendo cooperativa, sin terminación forzada.
-
-### Predicción de retrasos: entrenamiento real, datos simulados
-
-La vista **Predicción de retrasos** solo entrena por botón. Genera 1.000 registros
-con semilla 20261114, en 100 días sintéticos. Predictores: origen, destino, hora
-programada, congestión, viento y lluvia previstos. El objetivo se genera mediante
-una fórmula explícita con ruido; no procede de vuelos reales ni de CP-SAT.
-
-GroupShuffleSplit separa días completos: 800 registros de entrenamiento y 200 de
-prueba. StandardScaler y OneHotEncoder se ajustan dentro de un Pipeline solo con
-entrenamiento. Se compara Ridge(alpha=1, solver=lsqr) con DummyRegressor(media).
-La predicción mostrada se limita inferiormente a cero. No se realiza selección de
-hiperparámetros usando la prueba ni se conectan predicciones a las restricciones.
-
-Resultados reales del experimento local:
-
-| Medida | Valor |
+### Repetir comprobaciones
+
+Windows:
+
+```powershell
+.venv/Scripts/python.exe -m unittest discover -s tests -v
+.venv/Scripts/python.exe -m pip check
+.venv/Scripts/python.exe -m herramientas.validadores.auditar_paquete_academico --indice
+```
+
+En Linux, sustituir `.venv/Scripts/python.exe` por `.venv/bin/python`.
+Si los recursos satisfacen la admisión, la suite puede ejecutar CP-SAT; de lo
+contrario omite sus seis pruebas. El recuento documentado no garantiza el resultado
+de otra ejecución. La auditoría revisa archivos e índice, sin publicar ni autorizar
+un despliegue.
+
+Para reproducir las comprobaciones históricas consultar la
+[guía Colab](docs/entrega1/colab.md) y el
+[cuaderno externo R2](docs/entrega1/validacion_colab_entorno_r2.ipynb).
+El informe inspeccionado acredita el snapshot histórico, no una ejecución nueva
+del cuaderno R2. No se regeneran silenciosamente manifiestos ni evidencias.
+
+## Limitaciones y alcance académico
+
+- Datos sintéticos: sin validación de decisiones operacionales o predicciones
+  sobre vuelos reales.
+- Planificación de una jornada y hasta doce trayectos, sin reposicionamiento,
+  cambios de horarios, mantenimiento detallado, tripulaciones ni planificación semanal.
+- Viento y lluvia son predictores simulados de Ridge; no son restricciones
+  meteorológicas de CP-SAT.
+- La validación ampliada en Colab y el recorrido público de la interfaz no prueban
+  una nueva optimización ampliada exitosa en producción.
+- Los presupuestos supervisados y la cancelación cooperativa no garantizan
+  terminación forzada ni límites duros de consumo.
+- Los resultados de sesión son temporales y no actualizan automáticamente el catálogo.
+
+El desarrollo profesional futuro de SkyRisk Lab contempla mayor alcance de
+planificación y apoyo a decisiones. Esa visión no constituye funcionalidad
+implementada ni certificación de seguridad de esta entrega. El paquete académico
+mantiene una lista explícita de archivos, separada del entorno profesional y sus datos.
+
+## Documentación y trazabilidad
+
+| Documento | Uso |
 | --- | --- |
-| MAE Ridge | 3,0628339081 minutos |
-| MAE referencia Dummy | 6,2101520217 minutos |
-| Datos SHA-256 | 91860488e459ab7ab9273ee39761152569a2ca3b27476a556122202103cef7bd |
-| Registros entrenamiento / prueba | 800 / 200 |
+| [Validación técnica](docs/entrega1/validacion.md) | Pruebas, evidencias y registros de preparación. |
+| [Arquitectura](docs/entrega1/arquitectura.md) | Diseño y fundamentos técnicos. |
+| [Investigación](docs/entrega1/investigacion.md) | Problema y selección tecnológica. |
+| [Compatibilidad cloud](docs/entrega1/compatibilidad_cloud.md) | Estudios y condiciones de entorno. |
+| [Presentación](docs/entrega1/presentacion.md) | Guion y recorrido de la interfaz. |
+| [Colab](docs/entrega1/colab.md) | Reproducción de comprobaciones históricas. |
 
-Estos resultados evalúan aprendizaje del generador sintético, no capacidad de
-predecir retrasos reales. ML utiliza un hilo de cómputo y comparte exclusión con
-CP-SAT. Exige 256 MiB disponibles antes de comenzar; esto no cambia el requisito
-de 2 GiB del optimizador. No guarda ni carga modelos pickle de fuentes externas.
-
-### Verificación y pendiente de aceptación
-
-Se comprobaron 81 pruebas únicas locales sin CP-SAT y las seis pruebas reales
-CP-SAT aprobaron en Google Colab/Linux/Python 3.13.18. El informe y su log fueron
-inspeccionados, con seis registros APROBADA, sin fallos, errores ni omisiones,
-y con snapshot verificado al finalizar. No se redujo la admisión de 2 GiB.
-Las 60 pruebas originales están incluidas en los 81 casos locales; no se suman
-repeticiones ni se presenta todo como una única suite ejecutada en Cloud.
-La evaluación Ridge es local; el entrenamiento real desde la interfaz pública
-ampliada todavía requiere validación. Ver `docs/entrega1/validacion.md`.
-
-Para repetir solo las comprobaciones sin solver:
-
-```powershell
-.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ampliacion_academica.py -k AmpliacionAcademicaTests -q
-.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ml_academico.py -q
-.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_app_academica.py -q
-```
-
-Con al menos 2 GiB libres y admisión válida, ejecutar los seis ensayos de forma
-secuencial; si la admisión falla, unittest los marca omitidos, no aprobados:
-
-```powershell
-.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_ampliacion_academica.py -k SolverAmpliadoRealTests -v
-```
-
-Para ejecutar la suite completa:
-
-```powershell
-.venv/Scripts/python.exe -B -m unittest discover -s tests -p 'test_*academic*.py' -v
-.venv/Scripts/python.exe -B -m pip check
-.venv/Scripts/python.exe -B -m streamlit run app_academica.py
-```
-
-Arrancar el servidor no ejecuta entrenamiento ni CP-SAT. AppTest comprobó la
-navegación y acciones, sin navegador ni servidor público. La validación Colab
-acredita CP-SAT y sus dependencias mínimas; no sustituye la instalación Linux del
-stack completo de Streamlit/Scikit-learn ni el recorrido público real del botón ML.
-Faltan esas comprobaciones y autorización para publicar. La política actual admite
-38 rutas exactas, incluidos el cuaderno externo R2 y el Dev Container conciliado; no añade artefactos ni resultados
-automáticamente. No hacer commit, push, merge o despliegue sin autorización.
-
-## Reproducción de las seis pruebas aprobadas en Colab
-
-La guía está en [docs/entrega1/colab.md](docs/entrega1/colab.md). Para reproducir
-el entorno use el [cuaderno externo R2](docs/entrega1/validacion_colab_entorno_r2.ipynb),
-que evita ensurepip usando venv --without-pip y el pip principal con --python.
-El [cuaderno original](docs/entrega1/validacion_colab.ipynb) y los 36 archivos de
-su snapshot permanecen intactos dentro del ZIP original. Se conservan sus hashes.
-No basta clonar el commit base para obtener aquel árbol de trabajo sin commit.
-R2 se incluye ahora en la política del repositorio, no en el manifiesto original.
-
-El venv de Colab instala solo OR-Tools 9.15.6755, pandas 3.0.0 y psutil 7.2.2,
-con sus transitivas registradas. No necesita Streamlit, ML ni GPU. Un preflight
-aplica la admisión original de 2 GiB y cgroup; cada prueba vuelve a comprobarla.
-El runner ejecuta exclusivamente los seis métodos existentes, secuencialmente,
-y no considera una omisión como aprobación. Los tests directos mantienen sus
-controles actuales: el procedimiento no añade una contención dura ni promete
-plazos estrictos donde la cancelación es cooperativa.
-
-El resultado real se conserva en evidencia_skyrisk_cpsat_colab.zip, con
-resultado.json, unittest.log y MANIFIESTO_COLAB.json. Su huella SHA-256 es:
-`24b8f3547eb8e048e7b13acd9f496964360b29f9f04a7010daa9b63dc7a63171`.
-El manifiesto coincide byte a byte con el del snapshot original. La ejecución
-registró 2026-11-14T02:25:01.380789+00:00 (13/11/2026, 21:25:01, America/Bogota).
-El archivo de evidencia se mantiene en custodia local separada; no se añade el
-ZIP de Descargas ni se exponen rutas personales en el paquete público.
-
-El snapshot original mantiene SHA-256
-`34b5bffd805aaff0ef04b22d27b00aaf4ecd2a979d067e6ec671faa880c0bb13`
-y snapshot_id
-`aca0c168268a2db1bb0c9b52fbd2735cf295b5a408a536bb27c64f6a6a48e456`.
-No regenerarlo ni actualizar silenciosamente su manifiesto. artifacts/ permanece
-excluido de Git. Publicar documentación nueva o R2 no convierte el commit nuevo
-en aquel snapshot: son revisiones externas y trazables, sin cambiar el optimizador.
-La instalación y ejecución completa del cuaderno externo R2 no se acredita solo
-por el informe del snapshot: debe distinguirse de la corrección manual del entorno
-con la que se obtuvieron las seis aprobaciones.
-
-
-### Dev Container conciliado con el trabajo remoto
-
-Se conserva en el historial la adición remota b09fb5a y se corrige únicamente
-su configuración de desarrollo. La imagen Python 3.13 Bookworm de Microsoft
-se fija por digest; su existencia se comprobó en el registro oficial. Las
-instalaciones se dirigen a .venv mediante pip --python, usando requirements.txt,
-sin pip --user, instalaciones Streamlit adicionales ni actualizaciones apt.
-El arranque usa app_academica.py y mantiene CORS y XSRF activados explícitamente.
-
-Esta configuración corresponde a Codespaces/Dev Containers. Community Cloud
-continúa usando su Python configurado y requirements.txt; no se confunden ambos
-entornos. La validación estática y las pruebas de política no equivalen a ejecutar
-un contenedor ni al entrenamiento real desde la interfaz pública.
+Las guías técnicas conservan registros de etapas anteriores, algunos con tareas
+entonces pendientes. Este README actualiza el estado publicado al 14/11/2026,
+incluida la verificación pública de navegación y Ridge posterior al commit
+`853868e`. Esa comprobación se registró en el informe de publicación de la sesión;
+no se añadió un artefacto público independiente de navegador. Los resultados
+históricos se conservan y no se atribuyen a ejecuciones nuevas.
